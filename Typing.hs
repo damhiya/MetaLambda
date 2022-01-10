@@ -5,6 +5,7 @@ import Control.Monad
 import qualified Syntax.Object as O
 import qualified Syntax.Meta as M
 
+-- global context
 type GCtx = [(M.GId, O.LCtx, O.Ty)]
 
 -- lookup functions

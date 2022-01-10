@@ -6,7 +6,10 @@ newtype Id = Id String deriving (Show, Eq)
 data Ty = Base | Arr Ty Ty deriving (Show, Eq)
 
 type LCtx = [(Id, Ty)]
-type LECtx = [Id] -- local erased ctx
+type LECtx = [Id]
+
+erase :: LCtx -> LECtx
+erase = map fst
 
 -- term definition
 data Tm m
