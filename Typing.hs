@@ -55,3 +55,6 @@ inferObj gctx lctx (O.Meta (M.Inst x tms)) = do
     ty' <- inferObj gctx lctx tm
     guard (ty == ty')
   pure ty
+
+inferType :: M.Tm -> Maybe M.Ty
+inferType = inferMeta [] []
