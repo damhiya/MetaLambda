@@ -54,13 +54,39 @@ three' = M.LetBox [x,f] u three
 three'' :: M.Tm
 three'' = M.App close three'
 
+-- nine' : [ f : Base -> Base |- Base -> Base ]
+-- nine' = let box (f.U) = three' in box(f. U with (U with f))
+nine' :: M.Tm
+nine' = M.LetBox [f] u three'
+      $ M.Box [(f, btb)]
+      $ O.Meta (M.Inst u [O.Meta (M.Inst u [vf])])
+  where
+    btb = O.Arr O.Base O.Base
+    f = O.Id "f" 0
+    vf = O.Var f
+    u = M.GId "U" 0
+-- nine' -->
+--   box(f. fn y ->
+--            ((fn x -> f (f (f x)))
+--              ((fn x -> f (f (f x)))
+--                ((fn x -> f (f (f x))) y))))
+
+-- nine'' : [ |- (Base -> Base) -> Base -> Base ]
+-- nine'' = close nine'
+nine'' :: M.Tm
+nine'' = M.App close nine'
+
 -- try these
 _ = inferType close
 _ = inferType three
 _ = inferType three'
 _ = inferType three''
+_ = inferType nine'
+_ = inferType nine''
 
 _ = normalize close
 _ = normalize three
 _ = normalize three'
 _ = normalize three''
+_ = normalize nine'
+_ = normalize nine''
