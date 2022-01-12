@@ -5,7 +5,7 @@ data Id = Id !String !Integer deriving (Show, Eq, Ord)
 data GId = GId !String !Integer deriving (Show, Eq)
 
 -- type and local contex
-data Type = Base | Arr Type Type | BoxT LCtx Type deriving (Show, Eq)
+data Type = Base String | Arr Type Type | BoxT LCtx Type deriving (Show, Eq)
 type LCtx = [(Id, Type)]
 type LECtx = [Id]
 

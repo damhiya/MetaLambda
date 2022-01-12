@@ -12,7 +12,8 @@ close = Lam c (BoxT [(f, btb)] btb)
       $ Box []
       $ Lam g btb (Clo u [vg])
   where
-    btb = Arr Base Base
+    b = Base "B"
+    btb = Arr b b
     u = GId "U" 0
     c = Id "c" 0
     f = Id "f" 0
@@ -25,8 +26,8 @@ close = Lam c (BoxT [(f, btb)] btb)
 three :: Term
 three = Box [(x, b), (f, btb)] (App vf $ App vf $ App vf vx)
   where
-    b = Base
-    btb = Arr Base Base
+    b = Base "B"
+    btb = Arr b b
     f = Id "f" 0
     x = Id "x" 0
     vf = Var f
@@ -39,8 +40,8 @@ three' = LetBox [x,f] u three
        $ Box [(f, btb)]
        $ Lam x b (Clo u [vx,vf])
   where
-    b = Base
-    btb = Arr Base Base
+    b = Base "B"
+    btb = Arr b b
     u = GId "U" 0
     f = Id "f" 0
     x = Id "x" 0
@@ -59,7 +60,8 @@ nine' = LetBox [f] u three'
       $ Box [(f, btb)]
       $ Clo u [Clo u [vf]]
   where
-    btb = Arr Base Base
+    b = Base "B"
+    btb = Arr b b
     u = GId "U" 0
     f = Id "f" 0
     vf = Var f
@@ -73,6 +75,36 @@ nine' = LetBox [f] u three'
 -- nine'' = close nine'
 nine'' :: Term
 nine'' = App close nine'
+
+-- ex4 : [ x : A |- B ] -> [ y1 : A |- [ y2 : B |- C ] ] -> [ z : A |- C ]
+-- ex4 =
+--   fn c1 c2 ->
+--     let box(x.u) = c1 in
+--     let box(y1.v) = c2 in
+--       box(z.
+--         let box(y2.w) = v with z in
+--           w with (u with z))
+ex4 :: Term
+ex4 = Lam c1 (BoxT [(x,a)] b)
+    $ Lam c2 (BoxT [(y1,a)] (BoxT [(y2,b)] c))
+    $ LetBox [x] u (Var c1)
+    $ LetBox [y1] v (Var c2)
+    $ Box [(z,a)]
+    $ LetBox [y2] w (Clo v [Var z])
+    $ Clo w [Clo u [Var z]]
+  where
+    a = Base "A"
+    b = Base "B"
+    c = Base "C"
+    u = GId "u" 0
+    v = GId "v" 0
+    w = GId "w" 0
+    c1 = Id "c1" 0
+    c2 = Id "c2" 0
+    x = Id "x" 0
+    y1 = Id "y1" 0
+    y2 = Id "y2" 0
+    z = Id "z" 0
 
 -- try these
 _ = inferType [] [] close
