@@ -9,8 +9,8 @@ import qualified Syntax.Meta as M
 type GCtx = [(M.GId, O.LCtx, O.Ty)]
 
 -- lookup functions
-lookupObjId :: O.LCtx -> O.Id -> Maybe O.Ty
-lookupObjId ctx x = lookup x ctx
+lookupObjectId :: O.LCtx -> O.Id -> Maybe O.Ty
+lookupObjectId ctx x = lookup x ctx
 
 lookupMetaId :: M.LCtx -> M.Id -> Maybe M.Ty
 lookupMetaId ctx x = lookup x ctx
@@ -30,29 +30,29 @@ inferMeta gctx lctx (M.App tm1 tm2) = do
   guard (tya == tya')
   pure tyb
 inferMeta gctx lctx (M.Box olctx otm) = do
-  oty <- inferObj gctx olctx otm
+  oty <- inferObject gctx olctx otm
   pure (M.BoxT olctx oty)
 inferMeta gctx lctx (M.LetBox olectx x tm1 tm2) = do
   M.BoxT olctx oty <- inferMeta gctx lctx tm1
   guard (olectx == O.erase olctx)
   inferMeta ((x, olctx, oty) : gctx) lctx tm2
 
-inferObj :: GCtx -> O.LCtx -> O.Tm M.M -> Maybe O.Ty
-inferObj gctx lctx (O.Var x) = lookupObjId lctx x
-inferObj gctx lctx (O.Abs x ty tm) = do
-  ty' <- inferObj gctx ((x, ty) : lctx) tm
+inferObject :: GCtx -> O.LCtx -> O.Tm M.M -> Maybe O.Ty
+inferObject gctx lctx (O.Var x) = lookupObjectId lctx x
+inferObject gctx lctx (O.Abs x ty tm) = do
+  ty' <- inferObject gctx ((x, ty) : lctx) tm
   pure (O.Arr ty ty')
-inferObj gctx lctx (O.App tm1 tm2) = do
-  O.Arr tya tyb <- inferObj gctx lctx tm1
-  tya' <- inferObj gctx lctx tm2
+inferObject gctx lctx (O.App tm1 tm2) = do
+  O.Arr tya tyb <- inferObject gctx lctx tm1
+  tya' <- inferObject gctx lctx tm2
   guard (tya == tya')
   pure tyb
-inferObj gctx lctx (O.Meta (M.Inst x tms)) = do
+inferObject gctx lctx (O.Meta (M.Inst x tms)) = do
   (ctx, ty) <- lookupGId gctx x
   guard (length ctx == length tms)
   let tys = map snd ctx
   forM_ (zip tys tms) $ \(ty, tm) -> do
-    ty' <- inferObj gctx lctx tm
+    ty' <- inferObject gctx lctx tm
     guard (ty == ty')
   pure ty
 
