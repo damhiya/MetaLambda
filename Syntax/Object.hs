@@ -1,7 +1,7 @@
 module Syntax.Object where
 
 -- identifier, type, local context
-newtype Id = Id String deriving (Show, Eq)
+data Id = Id !String !Integer deriving (Show, Eq)
 
 data Ty = Base | Arr Ty Ty deriving (Show, Eq)
 

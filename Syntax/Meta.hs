@@ -3,8 +3,8 @@ module Syntax.Meta where
 import qualified Syntax.Object as O
 
 -- identifier, type, local context
-newtype Id = Id String deriving (Show, Eq)
-newtype GId = GId String deriving (Show, Eq)
+data Id = Id !String !Integer deriving (Show, Eq)
+data GId = GId !String !Integer deriving (Show, Eq)
 
 data Ty = BoxT O.LCtx O.Ty | Arr Ty Ty deriving Show
 

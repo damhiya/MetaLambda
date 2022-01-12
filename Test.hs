@@ -13,11 +13,11 @@ close = M.Abs c (M.BoxT [(f, btb)] btb)
       $ O.Abs g btb (O.Meta $ M.Inst u [vg])
   where
     btb = O.Arr O.Base O.Base
-    c = M.Id "c"
+    c = M.Id "c" 0
     vc = M.Var c
-    u = M.GId "U"
-    f = O.Id "f"
-    g = O.Id "g"
+    u = M.GId "U" 0
+    f = O.Id "f" 0
+    g = O.Id "g" 0
     vg = O.Var g
 
 -- three : [ f : Base -> Base, x : Base |- Base ]
@@ -28,8 +28,8 @@ three = M.Box [(x, b), (f, btb)]
   where
     btb = O.Arr O.Base O.Base
     b = O.Base
-    f = O.Id "f"
-    x = O.Id "x"
+    f = O.Id "f" 0
+    x = O.Id "x" 0
     vf = O.Var f
     vx = O.Var x
 
@@ -42,9 +42,9 @@ three' = M.LetBox [x,f] u three
   where
     btb = O.Arr O.Base O.Base
     b = O.Base
-    u = M.GId "U"
-    f = O.Id "f"
-    x = O.Id "x"
+    u = M.GId "U" 0
+    f = O.Id "f" 0
+    x = O.Id "x" 0
     vf = O.Var f
     vx = O.Var x
 
