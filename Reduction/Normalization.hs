@@ -15,5 +15,5 @@ normalize (M.App tm1 tm2) =
 normalize tm@(M.Box _ _) = tm
 normalize (M.LetBox olectx u tm1 tm2) =
   case normalize tm1 of
-    M.Box olctx otm -> normalize (substGlobal (u, olectx, otm) tm2)
+    M.Box olctx otm -> normalize (substGlobalMeta (u, olectx, otm) tm2)
     tm1' -> M.App tm1' tm2

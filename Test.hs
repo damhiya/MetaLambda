@@ -60,28 +60,7 @@ _ = inferType three
 _ = inferType three'
 _ = inferType three''
 
--- metaThree : [ |- Base -> Base ] ->
---            ([ |- Base -> Base ] -> [ |- Base -> Base ]) ->
---             [ |- Base -> Base ]
--- metaThree = fn x f -> f (f (f x))
-metaThree :: M.Tm
-metaThree = M.Abs x t
-          $ M.Abs f (M.Arr t t)
-          $ (M.App vf $ M.App vf $ M.App vf vx)
-  where
-    t = M.BoxT [] (O.Arr O.Base O.Base)
-    f = M.Id "f" 0
-    x = M.Id "x" 0
-    vf = M.Var f
-    vx = M.Var x
-
--- boxedId : [ |- Base -> Base ]
--- boxedId = metaThree box(. fn x -> x) (fn x -> x)
-boxedId :: M.Tm
-boxedId = M.App (M.App metaThree (M.Box [] (O.Abs y O.Base vy))) (M.Abs x t vx)
-  where
-    t = M.BoxT [] (O.Arr O.Base O.Base)
-    x = M.Id "x" 0
-    vx = M.Var x
-    y = O.Id "x" 0
-    vy = O.Var y
+_ = normalize close
+_ = normalize three
+_ = normalize three'
+_ = normalize three''
