@@ -34,7 +34,7 @@ inferMeta gctx lctx (M.Box olctx otm) = do
   pure (M.BoxT olctx oty)
 inferMeta gctx lctx (M.LetBox olectx x tm1 tm2) = do
   M.BoxT olctx oty <- inferMeta gctx lctx tm1
-  guard (length olectx == length olctx)
+  guard (olectx == O.erase olctx)
   inferMeta ((x, olctx, oty) : gctx) lctx tm2
 
 inferObj :: GCtx -> O.LCtx -> O.Tm M.M -> Maybe O.Ty

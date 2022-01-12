@@ -5,20 +5,20 @@ import qualified Syntax.Meta as M
 import Typing
 
 -- close : [ f : Base -> Base |- Base -> Base ] -> [ |- (Base -> Base) -> Base -> Base ]
--- close = fn c -> let box (g.U) = c in box(. fn f -> U with f)
+-- close = fn c -> let box (f.U) = c in box(. fn g -> U with g)
 close :: M.Tm
 close = M.Abs c (M.BoxT [(f, btb)] btb)
-      $ M.LetBox [g] u vc
+      $ M.LetBox [f] u vc
       $ M.Box []
-      $ O.Abs f btb (O.Meta $ M.Inst u [vf])
+      $ O.Abs g btb (O.Meta $ M.Inst u [vg])
   where
     btb = O.Arr O.Base O.Base
     c = M.Id "c"
-    u = M.GId "U"
-    g = O.Id "g"
-    f = O.Id "f"
     vc = M.Var c
-    vf = O.Var f
+    u = M.GId "U"
+    f = O.Id "f"
+    g = O.Id "g"
+    vg = O.Var g
 
 -- three : [ f : Base -> Base, x : Base |- Base ]
 -- three = box(f x. f (f (f x)))
@@ -38,9 +38,10 @@ three = M.Box [(x, b), (f, btb)]
 three' :: M.Tm
 three' = M.LetBox [x,f] u three
        $ M.Box [(f, btb)]
-       $ O.Abs x O.Base (O.Meta $ M.Inst u [vx,vf])
+       $ O.Abs x b (O.Meta $ M.Inst u [vx,vf])
   where
     btb = O.Arr O.Base O.Base
+    b = O.Base
     u = M.GId "U"
     f = O.Id "f"
     x = O.Id "x"
