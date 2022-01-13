@@ -12,7 +12,7 @@ close = Lam c (BoxT [(f, btb)] btb)
       $ Box []
       $ Lam g btb (Clo u [vg])
   where
-    b = Base "B"
+    b = Base
     btb = Arr b b
     u = GId "U" 0
     c = Id "c" 0
@@ -26,7 +26,7 @@ close = Lam c (BoxT [(f, btb)] btb)
 three :: Term
 three = Box [(x, b), (f, btb)] (App vf $ App vf $ App vf vx)
   where
-    b = Base "B"
+    b = Base
     btb = Arr b b
     f = Id "f" 0
     x = Id "x" 0
@@ -40,7 +40,7 @@ three' = LetBox [x,f] u three
        $ Box [(f, btb)]
        $ Lam x b (Clo u [vx,vf])
   where
-    b = Base "B"
+    b = Base
     btb = Arr b b
     u = GId "U" 0
     f = Id "f" 0
@@ -60,7 +60,7 @@ nine' = LetBox [f] u three'
       $ Box [(f, btb)]
       $ Clo u [Clo u [vf]]
   where
-    b = Base "B"
+    b = Base
     btb = Arr b b
     u = GId "U" 0
     f = Id "f" 0
@@ -93,9 +93,9 @@ ex4 = Lam c1 (BoxT [(x,a)] b)
     $ LetBox [y2] w (Clo v [Var z])
     $ Clo w [Clo u [Var z]]
   where
-    a = Base "A"
-    b = Base "B"
-    c = Base "C"
+    a = Base
+    b = Arr Base Base
+    c = Arr Base (Arr Base Base)
     u = GId "u" 0
     v = GId "v" 0
     w = GId "w" 0
