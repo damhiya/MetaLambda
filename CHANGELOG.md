@@ -1,5 +1,7 @@
 # Revision history for MetaLambda
 
-## 0.1.0.0 -- 2022-01-14
+## Dev
 
-* First version. Released on an unsuspecting world.
+* Type inference
+* Evaluation
+* Parser (WIP)
