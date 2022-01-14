@@ -1,9 +1,7 @@
-{-# LANGUAGE LambdaCase #-}
-
 module Typing where
 
-import Control.Monad
-import Syntax
+import           Control.Monad
+import           Syntax
 
 -- global context
 type GCtx = [(GId, LCtx, Type)]
@@ -29,7 +27,7 @@ data Error
   deriving Show
 
 with :: e -> Maybe a -> Either e a
-with e Nothing = Left e
+with e Nothing  = Left e
 with e (Just x) = Right x
 
 inferType :: GCtx -> LCtx -> Term -> Either Error Type

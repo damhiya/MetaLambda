@@ -1,10 +1,10 @@
 module Reduction.Substitution where
 
-import Data.Map (Map)
-import qualified Data.Map as Map
-import Data.Semigroup
+import           Data.Map       (Map)
+import qualified Data.Map       as Map
+import           Data.Semigroup
 
-import Syntax
+import           Syntax
 
 -- trace used variable names
 type AllocId = String -> Maybe (Max Integer)
@@ -18,12 +18,12 @@ singleton (Id x i) y
   | otherwise = Nothing
 
 fromTerm :: Term -> AllocId
-fromTerm (Var x) = singleton x
-fromTerm (Lam _ _ e) = fromTerm e
-fromTerm (App e1 e2) = fromTerm e1 <> fromTerm e2
-fromTerm (Box _ _) = mempty
+fromTerm (Var x)            = singleton x
+fromTerm (Lam _ _ e)        = fromTerm e
+fromTerm (App e1 e2)        = fromTerm e1 <> fromTerm e2
+fromTerm (Box _ _)          = mempty
 fromTerm (LetBox _ _ e1 e2) = fromTerm e1 <> fromTerm e2
-fromTerm (Clo _ es) = mconcat (map fromTerm es)
+fromTerm (Clo _ es)         = mconcat (map fromTerm es)
 
 -- substitutions
 subst :: (Id, Term) -> Term -> Term

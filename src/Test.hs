@@ -1,15 +1,13 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Test where
 
-import Syntax
-import Typing
-import Reduction.Evaluation
+import           Reduction.Evaluation
+import           Syntax
+import           Typing
 
-import Data.Text
-import qualified Text.Megaparsec as P
-import Parser.Lexer
-import Parser.Parser
+import           Data.Text
+import           Parser.Lexer
+import           Parser.Parser
+import qualified Text.Megaparsec      as P
 
 -- close : [ f : Base -> Base |- Base -> Base ] -> [ |- (Base -> Base) -> Base -> Base ]
 -- close = fn c -> let box (f.U) = c in box(. fn g -> U with g)

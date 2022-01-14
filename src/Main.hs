@@ -1,15 +1,15 @@
 module Main where
 
-import System.Exit
-import System.IO
-import qualified Data.Text.IO as T
-import Text.Megaparsec as P
+import qualified Data.Text.IO         as T
+import           System.Exit
+import           System.IO
+import           Text.Megaparsec      as P
 
-import Parser.Lexer
-import Parser.Parser
-import qualified Text.Earley.Parser as E
-import Typing
-import Reduction.Evaluation
+import           Parser.Lexer
+import           Parser.Parser
+import           Reduction.Evaluation
+import qualified Text.Earley.Parser   as E
+import           Typing
 
 main :: IO ()
 main = do

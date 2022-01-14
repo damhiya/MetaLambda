@@ -1,15 +1,13 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Parser.Lexer where
 
-import Data.Functor
-import Data.Text
-import Data.Void
-import Control.Applicative
-import qualified Text.Megaparsec as P
+import           Control.Applicative
+import           Data.Functor
+import           Data.Text
+import           Data.Void
+import qualified Text.Megaparsec      as P
 import qualified Text.Megaparsec.Char as P
 
-import Parser.Syntax
+import           Parser.Syntax
 
 type PM = P.Parsec Void Text
 
@@ -17,16 +15,16 @@ token :: PM Token
 token = do
   pos <- P.getSourcePos
   tok <- P.choice
-    [ P.string "." $> TDot
-    , P.string "," $> TComma
-    , P.string ":" $> TColon
-    , P.string "=" $> TEqual
+    [ P.string "."  $> TDot
+    , P.string ","  $> TComma
+    , P.string ":"  $> TColon
+    , P.string "="  $> TEqual
     , P.string "->" $> TArrow
     , P.string "|-" $> TVDash
-    , P.string "[" $> TBrkL
-    , P.string "]" $> TBrkR
-    , P.string "(" $> TParL
-    , P.string ")" $> TParR
+    , P.string "["  $> TBrkL
+    , P.string "]"  $> TBrkR
+    , P.string "("  $> TParL
+    , P.string ")"  $> TParR
     , do
         x <- headChar
         xs <- many tailChar

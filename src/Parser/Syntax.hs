@@ -1,6 +1,6 @@
 module Parser.Syntax where
 
-import Text.Megaparsec.Pos
+import           Text.Megaparsec.Pos
 
 data Tok
   = TDot
