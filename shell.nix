@@ -1,3 +1,3 @@
-{ mkShell, ghc }:
+{ mkShell, cabal-install, ghc }:
 let haskellPackages = hpkgs: with hpkgs; [ megaparsec Earley ];
-in mkShell { buildInputs = [ (ghc.withPackages haskellPackages) ]; }
+in mkShell { buildInputs = [ cabal-install (ghc.withPackages haskellPackages) ]; }
