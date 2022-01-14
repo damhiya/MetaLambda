@@ -49,7 +49,7 @@ grammar = mdo
     x <- ident
     pure (Var x)
     
-  box <- E.rule $ tok TBox *> parens do
+  box <- E.rule $ tok TBox *> brackets do
       g <- ctx
       tok TDot
       e <- term
@@ -57,18 +57,21 @@ grammar = mdo
     
   lam <- E.rule $ do
     tok TFn
-    x <- ident
-    tok TColon
-    t <- typ
+    xt <- parens $ do
+      x <- ident
+      tok TColon
+      t <- typ
+      pure (x,t)
     tok TArrow
     e <- term
-    pure (Lam x t e)
+    pure (uncurry Lam xt e)
     
   letbox <- E.rule $ do
     tok TLet
     tok TBox
-    gu <- parens $ do
+    gu <- brackets $ do
       g <- ectx
+      tok TDot
       u <- gident
       pure (g,u)
     tok TEqual
