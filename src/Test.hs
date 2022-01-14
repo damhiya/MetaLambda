@@ -1,8 +1,15 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Test where
 
 import Syntax
 import Typing
 import Reduction.Evaluation
+
+import Data.Text
+import qualified Text.Megaparsec as P
+import Parser.Lexer
+import Parser.Parser
 
 -- close : [ f : Base -> Base |- Base -> Base ] -> [ |- (Base -> Base) -> Base -> Base ]
 -- close = fn c -> let box (f.U) = c in box(. fn g -> U with g)
@@ -120,3 +127,26 @@ _ = eval three'
 _ = eval three''
 _ = eval nine'
 _ = eval nine''
+
+-- parsing test
+parse :: Text -> IO Term
+parse s =
+  case tokenize "" s of
+    Left b -> putStr (P.errorBundlePretty b) *> fail "lexing error"
+    Right ts -> do
+      let (es, r) = parser ts
+      case es of
+        [e] -> pure e
+        _ -> do
+          print es
+          print r
+          fail "parsing error"
+
+s1 :: Text
+s1 = "fn (x : base) -> x"
+
+s2 :: Text
+s2 = "fn (c : [ f : base -> base |- base -> base ]) -> let box[f.U] = c in box[. fn (g : base -> base) -> U with (g)]"
+
+s3 :: Text
+s3 = "fn (n : [ f : base -> base |- base -> base]) -> let box[f.U] = n in box[f : base -> base. U with (U with (f))]"
