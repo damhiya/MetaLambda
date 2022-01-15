@@ -31,8 +31,9 @@ executable MetaLambda
       Parser.Syntax
       Parser.Lexer
       Parser.Parser
+      PrettyPrinter
 
-    build-depends:    base ^>=4.14.3.0, containers, text, megaparsec, Earley
+    build-depends:    base ^>=4.14.3.0, containers, text, megaparsec, Earley, prettyprinter, haskeline
     hs-source-dirs:   src
     default-language: Haskell2010
     default-extensions: OverloadedStrings LambdaCase
