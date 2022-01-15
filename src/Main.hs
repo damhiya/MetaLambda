@@ -22,7 +22,7 @@ data ReplError
   | ErrType TypeError
 
 class (Monad m, MonadError ReplError m) => MonadRepl m where
-  readRepl :: String -> m String
+  getLineRepl :: String -> m String
   putStrRepl :: String -> m ()
   putStrLnRepl :: String -> m ()
 
@@ -33,13 +33,13 @@ liftReplError :: MonadError ReplError m => (e -> ReplError) -> Either e a -> m a
 liftReplError f = liftEither . first f
 
 instance MonadRepl (ExceptT ReplError (InputT IO)) where
-  readRepl s = ExceptT (with ErrInput <$> getInputLine s)
+  getLineRepl s = ExceptT (with ErrInput <$> getInputLine s)
   putStrRepl s = ExceptT (Right <$> outputStr s)
   putStrLnRepl s = ExceptT (Right <$> outputStrLn s)
 
 body :: MonadRepl m => m ()
 body = do
-  s <- readRepl ">> "
+  s <- getLineRepl ">> "
   ts <- liftReplError ErrLex $ tokenize "stdin" (T.pack s)
   e  <- liftReplError ErrParse $ parser ts
   printRepl (prettyTerm e)
@@ -48,7 +48,7 @@ body = do
   printRepl (prettyTerm (eval e))
 
 loop :: InputT IO ()
-loop = body' >>= \case
+loop = runExceptT body >>= \case
   Left ErrInput -> outputStrLn "bye."
   Left (ErrLex e) -> do
     outputStrLn "lex error"
@@ -64,8 +64,6 @@ loop = body' >>= \case
     outputStrLn (show e)
     loop
   Right () -> loop
-  where
-    body' = runExceptT body
 
 main :: IO ()
 main = runInputT defaultSettings loop
