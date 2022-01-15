@@ -5,11 +5,15 @@
 module Parser.Parser where
 
 import           Control.Applicative
+import           Control.Monad.Except
 import           Data.Functor
-import qualified Text.Earley         as E
+import qualified Text.Earley          as E
 
 import           Parser.Syntax
 import           Syntax
+import           Util
+
+type ParseError = ([Term], E.Report Token [Token])
 
 grammar :: E.Grammar r (E.Prod r Token Token Term)
 grammar = mdo
@@ -111,5 +115,8 @@ grammar = mdo
     parens p = tok TParL *> p <* tok TParR
     brackets p = tok TBrkL *> p <* tok TBrkR
 
-parser :: [Token] -> ([Term], E.Report Token [Token])
-parser = E.fullParses (E.parser grammar)
+parser :: MonadError ParseError m => [Token] -> m Term
+parser ts =
+  case E.fullParses (E.parser grammar) ts of
+    ([e], r) | null (E.unconsumed r) -> pure e
+    err                              -> throwError err

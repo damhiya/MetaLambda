@@ -1,15 +1,18 @@
 module Parser.Lexer where
 
 import           Control.Applicative
+import           Control.Monad.Except
 import           Data.Functor
 import           Data.Text
 import           Data.Void
+import           Parser.Syntax
 import qualified Text.Megaparsec      as P
 import qualified Text.Megaparsec.Char as P
 
-import           Parser.Syntax
+import           Util
 
 type PM = P.Parsec Void Text
+type LexError = P.ParseErrorBundle Text Void
 
 token :: PM Token
 token = do
@@ -46,5 +49,5 @@ token = do
 tokens :: PM [Token]
 tokens = P.space *> many token <* P.eof
 
-tokenize :: String -> Text -> Either (P.ParseErrorBundle Text Void) [Token]
-tokenize = P.parse tokens
+tokenize :: MonadError LexError m => String -> Text -> m [Token]
+tokenize f s = liftEither (P.parse tokens f s)

@@ -24,6 +24,7 @@ extra-source-files: CHANGELOG.md
 executable MetaLambda
     main-is:          Main.hs
     other-modules:
+      Util
       Syntax
       Typing
       Reduction.Substitution
@@ -33,7 +34,21 @@ executable MetaLambda
       Parser.Parser
       PrettyPrinter
 
-    build-depends:    base ^>=4.14.3.0, containers, text, megaparsec, Earley, prettyprinter, haskeline
+    build-depends:
+      base ^>=4.14.3.0,
+      containers,
+      text,
+      megaparsec,
+      Earley,
+      prettyprinter,
+      haskeline,
+      mtl
+
     hs-source-dirs:   src
     default-language: Haskell2010
-    default-extensions: OverloadedStrings LambdaCase
+    default-extensions:
+      OverloadedStrings
+      LambdaCase
+      MultiParamTypeClasses
+      FlexibleInstances
+      FlexibleContexts
