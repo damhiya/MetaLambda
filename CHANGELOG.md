@@ -1,7 +1,9 @@
 # Revision history for MetaLambda
 
 ## Dev
-
+Implementing following features
 * Type inference
 * Evaluation
-* Parser (WIP)
+* Parser
+* Pretty printer
+* Simple REPL
