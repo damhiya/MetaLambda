@@ -1,6 +1,5 @@
-{-# LANGUAGE ApplicativeDo  #-}
-{-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE RecursiveDo    #-}
+{-# LANGUAGE ApplicativeDo #-}
+{-# LANGUAGE RecursiveDo   #-}
 
 module Parser.Parser where
 
@@ -25,24 +24,23 @@ grammar = mdo
   boxt <- E.rule $ brackets $ do
     g <- ctx
     tok TVDash
-    t <- typ
+    t <- typ1
     pure (BoxT g t)
 
-  atyp <- E.rule $ base <|> boxt <|> parens typ
-
   arr <- E.rule $ do
-    t1 <- atyp
+    t1 <- typ2
     tok TArrow
-    t2 <- typ
+    t2 <- typ1
     pure (Arr t1 t2)
 
-  typ <- E.rule $ atyp <|> arr
+  typ2 <- E.rule $ base <|> boxt <|> parens typ1
+  typ1 <- E.rule $ typ2 <|> arr
 
   -- contexts
   ctx <- E.rule $ sepBy' (tok TComma) $ do
     x <- ident
     tok TColon
-    t <- typ
+    t <- typ1
     pure (x, t)
 
   ectx <- E.rule $ sepBy' (tok TComma) ident
@@ -52,21 +50,21 @@ grammar = mdo
     x <- ident
     pure (Var x)
 
-  box <- E.rule $ tok TBox *> brackets do
-      g <- ctx
-      tok TDot
-      e <- term
-      pure (Box g e)
+  box <- E.rule $ tok TBox *> (brackets $ do
+    g <- ctx
+    tok TDot
+    e <- term1
+    pure (Box g e))
 
   lam <- E.rule $ do
     tok TFn
     xt <- parens $ do
       x <- ident
       tok TColon
-      t <- typ
+      t <- typ1
       pure (x,t)
     tok TArrow
-    e <- term
+    e <- term1
     pure (uncurry Lam xt e)
 
   letbox <- E.rule $ do
@@ -78,27 +76,27 @@ grammar = mdo
       u <- gident
       pure (g,u)
     tok TEqual
-    e1 <- term
+    e1 <- term1
     tok TIn
-    e2 <- term
+    e2 <- term1
     pure (uncurry LetBox gu e1 e2)
 
   clo <- E.rule $ do
     u <- gident
     tok TWith
-    es <- parens $ sepBy' (tok TComma) term
+    es <- parens $ sepBy' (tok TComma) term1
     pure (Clo u es)
 
-  aterm <- E.rule $ var <|> box <|> parens term
-
   app <- E.rule $ do
-    e1 <- term
-    e2 <- aterm
+    e1 <- term2
+    e2 <- term3
     pure (App e1 e2)
 
-  term <- E.rule $ aterm <|> lam <|> letbox <|> clo <|> app
+  term3 <- E.rule $ var <|> box <|> parens term1
+  term2 <- E.rule $ term3 <|> app
+  term1 <- E.rule $ term2 <|> lam <|> letbox <|> clo
 
-  pure term
+  pure term1
   where
     tok t = E.satisfy (\(Token _ t') -> t' == t) $> ()
 
