@@ -10,7 +10,6 @@ import qualified Text.Earley          as E
 
 import           Parser.Syntax
 import           Syntax
-import           Util
 
 type ParseError = ([Term], E.Report Token [Token])
 

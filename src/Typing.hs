@@ -21,7 +21,7 @@ lookupId :: LCtx -> Id -> Maybe Type
 lookupId ctx x = lookup x ctx
 
 lookupGId :: GCtx -> GId -> Maybe (LCtx, Type)
-lookupGId gctx x = lookup x $ map (\(x,y,z) -> (x,(y,z))) gctx
+lookupGId gctx u = lookup u $ map (\(x,y,z) -> (x,(y,z))) gctx
 
 -- erase type in the context
 erase :: LCtx -> LECtx

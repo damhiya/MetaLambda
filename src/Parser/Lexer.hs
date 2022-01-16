@@ -9,8 +9,6 @@ import           Parser.Syntax
 import qualified Text.Megaparsec      as P
 import qualified Text.Megaparsec.Char as P
 
-import           Util
-
 type PM = P.Parsec Void Text
 type LexError = P.ParseErrorBundle Text Void
 
