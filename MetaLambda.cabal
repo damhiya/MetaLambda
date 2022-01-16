@@ -1,59 +1,89 @@
 cabal-version:      2.4
 name:               MetaLambda
 version:            0.1.0.0
-
--- A short (one-line) description of the package.
 synopsis:           Contextual Modal Type Theory
+description:
+  Implementation of Contextual Modal Type Theory[Nanevski et. al. 2008]
 
--- A longer description of the package.
-description:        Implementation of Contextual Modal Type Theory[Nanevski et. al. 2008]
-
--- A URL where users can report bugs.
 bug-reports:        https://github.com/damhiya/MetaLambda
-
--- The license under which the package is released.
 license:            BSD-3-Clause
 license-file:       LICENSE
 author:             damhiya
 maintainer:         damhiya@gmail.com
-
--- A copyright notice.
--- copyright:
+copyright:          (c) 2022 SoonWon Moon
 category:           LambdaCalculus
 extra-source-files: CHANGELOG.md
 
-source-repository   head
-  type:             git
-  location:         https://github.com/damhiya/MetaLambda.git
+source-repository head
+  type:     git
+  location: https://github.com/damhiya/MetaLambda.git
+
+library MetaLambdaLib
+  hs-source-dirs:     src
+  exposed-modules:
+    Parser.Lexer
+    Parser.Parser
+    Parser.Syntax
+    PrettyPrinter
+    Reduction.Evaluation
+    Reduction.Substitution
+    Syntax
+    Typing
+    Util
+
+  build-depends:
+    , base           ^>=4.14.3.0
+    , containers
+    , Earley
+    , megaparsec
+    , mtl
+    , prettyprinter
+    , text
+
+  ghc-options:        -Wall
+  default-language:   Haskell2010
+  default-extensions:
+    FlexibleContexts
+    LambdaCase
+    OverloadedStrings
 
 executable MetaLambda
-    main-is:          Main.hs
-    other-modules:
-      Util
-      Syntax
-      Typing
-      Reduction.Substitution
-      Reduction.Evaluation
-      Parser.Syntax
-      Parser.Lexer
-      Parser.Parser
-      PrettyPrinter
+  hs-source-dirs:     app
+  main-is:            Main.hs
+  other-modules:
+  build-depends:
+    , base           ^>=4.14.3.0
+    , containers
+    , Earley
+    , haskeline
+    , megaparsec
+    , MetaLambdaLib
+    , mtl
+    , prettyprinter
+    , text
 
-    build-depends:
-      base ^>=4.14.3.0,
-      containers,
-      text,
-      megaparsec,
-      Earley,
-      prettyprinter,
-      haskeline,
-      mtl
+  ghc-options:        -Wall
+  default-language:   Haskell2010
+  default-extensions:
+    FlexibleContexts
+    FlexibleInstances
+    LambdaCase
+    OverloadedStrings
 
-    hs-source-dirs:   src
-    default-language: Haskell2010
-    default-extensions:
-      OverloadedStrings
-      LambdaCase
-      MultiParamTypeClasses
-      FlexibleInstances
-      FlexibleContexts
+test-suite MetaLambdaTest
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     test
+  main-is:            Test.hs
+  build-depends:
+    , base           ^>=4.14.3.0
+    , hspec
+    , MetaLambdaLib
+    , tasty
+    , tasty-hspec
+    , text
+
+  ghc-options:        -Wall
+  default-language:   Haskell2010
+  default-extensions:
+    LambdaCase
+    OverloadedStrings

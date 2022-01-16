@@ -1,13 +1,13 @@
-module Test where
+module Main where
 
-import           Reduction.Evaluation
-import           Syntax
-import           Typing
+import Data.Text
+import Test.Hspec
+import Test.Tasty
+import Test.Tasty.Hspec
 
-import           Data.Text
-import           Parser.Lexer
-import           Parser.Parser
-import qualified Text.Megaparsec      as P
+import Syntax
+import Parser.Lexer
+import Parser.Parser
 
 -- close : [ f : Base -> Base |- Base -> Base ] -> [ |- (Base -> Base) -> Base -> Base ]
 -- close = fn c -> let box (f.U) = c in box(. fn g -> U with g)
@@ -70,16 +70,6 @@ nine' = LetBox [f] u three'
     u = GId "U" 0
     f = Id "f" 0
     vf = Var f
--- nine' -->
---   box(f. fn y ->
---            ((fn x -> f (f (f x)))
---              ((fn x -> f (f (f x)))
---                ((fn x -> f (f (f x))) y))))
-
--- nine'' : [ |- (Base -> Base) -> Base -> Base ]
--- nine'' = close nine'
-nine'' :: Term
-nine'' = App close nine'
 
 -- ex4 : [ x : A |- B ] -> [ y1 : A |- [ y2 : B |- C ] ] -> [ z : A |- C ]
 -- ex4 =
@@ -111,35 +101,6 @@ ex4 = Lam c1 (BoxT [(x,a)] b)
     y2 = Id "y2" 0
     z = Id "z" 0
 
--- try these
-_ = inferType [] [] close
-_ = inferType [] [] three
-_ = inferType [] [] three'
-_ = inferType [] [] three''
-_ = inferType [] [] nine'
-_ = inferType [] [] nine''
-
-_ = eval close
-_ = eval three
-_ = eval three'
-_ = eval three''
-_ = eval nine'
-_ = eval nine''
-
--- parsing test
-parse :: Text -> IO Term
-parse s =
-  case tokenize "" s of
-    Left b -> putStr (P.errorBundlePretty b) *> fail "lexing error"
-    Right ts -> do
-      let (es, r) = parser ts
-      case es of
-        [e] -> pure e
-        _ -> do
-          print es
-          print r
-          fail "parsing error"
-
 s1 :: Text
 s1 = "fn (x : base) -> x"
 
@@ -148,3 +109,6 @@ s2 = "fn (c : [ f : base -> base |- base -> base ]) -> let box[f.U] = c in box[.
 
 s3 :: Text
 s3 = "fn (n : [ f : base -> base |- base -> base]) -> let box[f.U] = n in box[f : base -> base. U with (U with (f))]"
+
+main :: IO ()
+main = pure ()
