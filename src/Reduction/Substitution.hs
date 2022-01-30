@@ -26,6 +26,21 @@ fromTerm (LetBox _ _ e1 e2) = fromTerm e1 <> fromTerm e2
 fromTerm (Clo _ es)         = mconcat (map fromTerm es)
 
 -- substitutions
+renameVar :: (Id, Id) -> Term -> Term
+renameVar (x, y) = subst (x, Var y)
+
+renameGVar :: (GId, GId) -> Term -> Term
+renameGVar s e@(Var _) = e
+renameGVar s (Lam x t e) = Lam x t (renameGVar s e)
+renameGVar s (App e1 e2) = App (renameGVar s e1) (renameGVar s e2)
+renameGVar s (Box octx e) = Box octx (renameGVar s e)
+renameGVar s@(u, v) e@(LetBox oectx w e1 e2)
+  | w == u    = e
+  | otherwise = LetBox oectx w (renameGVar s e1) (renameGVar s e2)
+renameGVar s@(u, v) (Clo w es)
+  | w == u    = Clo v (renameGVar s <$> es)
+  | otherwise = Clo w (renameGVar s <$> es)
+
 subst :: (Id, Term) -> Term -> Term
 subst (x, e) (Var y)
   | y == x    = e
@@ -34,7 +49,7 @@ subst s@(x, e) (Lam y t e1)
   | y == x    = Lam y t e1
   | otherwise =
     let y' = newId (singleton x <> fromTerm e) y
-    in Lam y' t (subst s $ subst (y, Var y') $ e1)
+    in Lam y' t (subst s . renameVar (y, y') $ e1)
 subst s (App e1 e2) = App (subst s e1) (subst s e2)
 subst s e@(Box _ _) = e
 subst s (LetBox oectx u e1 e2) = LetBox oectx u (subst s e1) (subst s e2)
