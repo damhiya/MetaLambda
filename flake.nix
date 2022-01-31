@@ -20,7 +20,7 @@
           buildInputs = with haskellPackages; [
             cabal-install
             haskell-language-server
-            cabal-fmt
+            hpack
           ];
           inputsFrom = builtins.attrValues self.packages.${system};
         };

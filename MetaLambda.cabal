@@ -1,90 +1,103 @@
-cabal-version:      2.4
-name:               MetaLambda
-version:            0.1.0.0
-synopsis:           Contextual Modal Type Theory
-description:
-  Implementation of Contextual Modal Type Theory[Nanevski et. al. 2008]
+cabal-version: 2.2
 
-bug-reports:        https://github.com/damhiya/MetaLambda
-license:            BSD-3-Clause
-license-file:       LICENSE
-author:             damhiya
-maintainer:         damhiya@gmail.com
-copyright:          (c) 2022 SoonWon Moon
-category:           LambdaCalculus
-extra-source-files: CHANGELOG.md
+-- This file has been generated from package.yaml by hpack version 0.34.6.
+--
+-- see: https://github.com/sol/hpack
+
+name:           MetaLambda
+version:        0.1.0.0
+synopsis:       Contextual Modal Type Theory
+description:    Implementation of Contextual Modal Type Theory[Nanevski et. al. 2008]
+category:       LambdaCalculus
+homepage:       https://github.com/damhiya/MetaLambda#readme
+bug-reports:    https://github.com/damhiya/MetaLambda/issues
+author:         damhiya
+maintainer:     damhiya@gmail.com
+copyright:      (c) 2022 SoonWon Moon
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    CHANGELOG.md
 
 source-repository head
-  type:     git
-  location: https://github.com/damhiya/MetaLambda.git
+  type: git
+  location: https://github.com/damhiya/MetaLambda
 
 library MetaLambdaLib
-  hs-source-dirs:     src
   exposed-modules:
-    Equality
-    Parser.Lexer
-    Parser.Parser
-    Parser.Syntax
-    PrettyPrinter
-    Reduction.Evaluation
-    Reduction.Substitution
-    Syntax
-    Typing
-    Util
-
+      Equality
+      Parser.Lexer
+      Parser.Parser
+      Parser.Syntax
+      PrettyPrinter
+      Reduction.Evaluation
+      Reduction.Substitution
+      Syntax
+      Typing
+      Util
+  other-modules:
+      Paths_MetaLambda
+  autogen-modules:
+      Paths_MetaLambda
+  hs-source-dirs:
+      src
+  default-extensions:
+      OverloadedStrings
+      LambdaCase
+      FlexibleContexts
+  ghc-options: -Wall -Wno-unused-matches
   build-depends:
-    , base           ^>=4.14.3.0
+      Earley
+    , base >=4.14.3.0 && <4.15
     , containers
-    , Earley
     , megaparsec
     , mtl
     , prettyprinter
     , text
-
-  ghc-options:        -Wall -Wno-unused-matches
-  default-language:   Haskell2010
-  default-extensions:
-    FlexibleContexts
-    LambdaCase
-    OverloadedStrings
+  default-language: Haskell2010
 
 executable MetaLambda
-  hs-source-dirs:     app
-  main-is:            Main.hs
+  main-is: Main.hs
   other-modules:
+      Paths_MetaLambda
+  autogen-modules:
+      Paths_MetaLambda
+  hs-source-dirs:
+      app
+  default-extensions:
+      OverloadedStrings
+      LambdaCase
+      FlexibleContexts
+      FlexibleInstances
+  ghc-options: -Wall -Wno-unused-matches
   build-depends:
-    , base           ^>=4.14.3.0
-    , containers
-    , Earley
+      MetaLambdaLib
+    , base >=4.14.3.0 && <4.15
     , haskeline
     , megaparsec
-    , MetaLambdaLib
     , mtl
-    , prettyprinter
     , text
-
-  ghc-options:        -Wall -Wno-unused-matches
-  default-language:   Haskell2010
-  default-extensions:
-    FlexibleContexts
-    FlexibleInstances
-    LambdaCase
-    OverloadedStrings
+  default-language: Haskell2010
 
 test-suite MetaLambdaTest
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     test
-  main-is:            Test.hs
+  type: exitcode-stdio-1.0
+  main-is: Test.hs
+  other-modules:
+      Paths_MetaLambda
+  autogen-modules:
+      Paths_MetaLambda
+  hs-source-dirs:
+      test
+  default-extensions:
+      OverloadedStrings
+      LambdaCase
+  ghc-options: -Wall -Wno-unused-matches
   build-depends:
-    , base           ^>=4.14.3.0
+      MetaLambdaLib
+    , base >=4.14.3.0 && <4.15
     , hspec
-    , MetaLambdaLib
     , tasty
     , tasty-hspec
     , text
-
-  ghc-options:        -Wall -Wno-unused-matches
-  default-language:   Haskell2010
-  default-extensions:
-    LambdaCase
-    OverloadedStrings
+  default-language: Haskell2010
