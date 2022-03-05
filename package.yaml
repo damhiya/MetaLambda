@@ -4,7 +4,7 @@
 name: MetaLambda
 version: 0.1.0.0
 synopsis: Contextual Modal Type Theory
-description: Implementation of Contextual Modal Type Theory[Nanevski et. al. 2008]
+description: Implementation of Contextual Modal Type Theory[Nanevski et al. 2008]
 category: LambdaCalculus
 github: damhiya/MetaLambda
 author: damhiya
@@ -55,6 +55,6 @@ tests:
     main: Test.hs
     dependencies:
       - MetaLambdaLib
-      - hspec
+      - directory
       - tasty
-      - tasty-hspec
+      - tasty-golden

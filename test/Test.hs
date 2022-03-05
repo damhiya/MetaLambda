@@ -1,13 +1,18 @@
 module Main where
 
-import Data.Text
-import Test.Hspec
+import Data.Text (Text)
+import qualified Data.Text as T
 import Test.Tasty
-import Test.Tasty.Hspec
+import qualified Test.Tasty.Golden.Advanced as Tasty
+import System.Directory
+import qualified Data.Text.IO as T
 
 import Syntax
 import Parser.Lexer
 import Parser.Parser
+import Reduction.Evaluation
+import Equality
+import PrettyPrinter
 
 -- close : [ f : Base -> Base |- Base -> Base ] -> [ |- (Base -> Base) -> Base -> Base ]
 -- close = fn c -> let box (f.U) = c in box(. fn g -> U with g)
@@ -110,5 +115,53 @@ s2 = "fn (c : [ f : base -> base |- base -> base ]) -> let box[f.U] = c in box[.
 s3 :: Text
 s3 = "fn (n : [ f : base -> base |- base -> base]) -> let box[f.U] = n in box[f : base -> base. U with (U with (f))]"
 
+goldenTestCase :: TestName ->
+                  FilePath -> -- golden file
+                  FilePath -> -- input file
+                  (Text -> IO a) -> -- input processor
+                  (Text -> IO a) -> -- golden processor
+                  (a -> a -> Maybe String) -> -- compare input
+                  (a -> Text) -> -- output processor
+                  TestTree
+goldenTestCase name golden input processInput processGolden cmp pretty =
+  Tasty.goldenTest
+    name
+    (T.readFile golden >>= processGolden)
+    (T.readFile input >>= processInput)
+    (\x y -> pure (cmp x y))
+    (\x -> T.writeFile golden (pretty x))
+
+(</>) :: FilePath -> FilePath -> FilePath
+xs </> ys = xs ++ "/" ++ ys
+
+parseTerm :: String -> Text -> Either String Term
+parseTerm f s = do
+  case tokenize f s of
+    Left err -> Left (show err)
+    Right ts -> case parser ts of
+      Left err -> Left (show err)
+      Right e -> Right e
+
 main :: IO ()
-main = pure ()
+main = do
+  xs <- listDirectory inputPath
+  let test = testGroup "golden testing" $ flip map xs $ \x ->
+        goldenTestCase
+          x
+          (goldenPath </> x)
+          (inputPath </> x)
+          (pure . fmap eval . parseTerm (inputPath </> x))
+          (pure . parseTerm x)
+          (\mx my ->
+             case mx of
+               Left err -> Just ("golden parse error\n" ++ err)
+               Right e1 -> case my of
+                 Left err -> Just ("input parse error\n" ++ err)
+                 Right e2 -> if eqAlpha e1 e2 then Nothing else Just "different!")
+          (\case
+              Left err -> T.pack err
+              Right e -> T.pack $ show $ prettyTerm 1 e)
+  defaultMain test
+  where
+    inputPath = "test/input"
+    goldenPath = "test/golden"

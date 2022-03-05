@@ -1,0 +1,1 @@
+fn (c : [ f : base -> base |- base -> base]) -> let box [f.U] = c in box[. fn (g : base -> base) -> U with (g)]

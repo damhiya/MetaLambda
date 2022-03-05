@@ -7,7 +7,7 @@ cabal-version: 2.2
 name:           MetaLambda
 version:        0.1.0.0
 synopsis:       Contextual Modal Type Theory
-description:    Implementation of Contextual Modal Type Theory[Nanevski et. al. 2008]
+description:    Implementation of Contextual Modal Type Theory[Nanevski et al. 2008]
 category:       LambdaCalculus
 homepage:       https://github.com/damhiya/MetaLambda#readme
 bug-reports:    https://github.com/damhiya/MetaLambda/issues
@@ -96,8 +96,8 @@ test-suite MetaLambdaTest
   build-depends:
       MetaLambdaLib
     , base >=4.14.3.0 && <4.15
-    , hspec
+    , directory
     , tasty
-    , tasty-hspec
+    , tasty-golden
     , text
   default-language: Haskell2010
