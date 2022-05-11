@@ -2,27 +2,49 @@
   description = "MetaLambda - contextual modal type theory";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
+    haskellNix.url = "github:input-output-hk/haskell.nix";
+    nixpkgs.follows = "haskellNix/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, haskellNix, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
-        haskellPackages = pkgs.haskellPackages;
-        packageName = "MetaLambda";
-      in rec {
-        packages.${packageName} =
-          haskellPackages.callCabal2nix packageName self { };
-        defaultPackage = self.packages.${system}.${packageName};
-        devShell = pkgs.mkShell {
-          buildInputs = with haskellPackages; [
-            cabal-install
-            haskell-language-server
-            hpack
-          ];
-          inputsFrom = builtins.attrValues self.packages.${system};
+        index-state = "2022-05-01T00:00:00Z";
+        overlays = [
+          haskellNix.overlay
+          (final: prev: {
+            MetaLambda = final.haskell-nix.cabalProject' {
+              inherit index-state;
+              src = ./.;
+              compiler-nix-name = "ghc8107";
+              shell.tools = {
+                cabal = {
+                  inherit index-state;
+                  version = "3.6.2.0";
+                };
+                haskell-language-server = {
+                  inherit index-state;
+                  version = "1.7.0.0";
+                };
+                hpack = {
+                  inherit index-state;
+                  version = "0.35.0";
+                };
+              };
+            };
+          })
+        ];
+        pkgs = import nixpkgs {
+          inherit system overlays;
+          inherit (haskellNix) config;
+        };
+        flake = pkgs.MetaLambda.flake { };
+      in flake // rec {
+        packages.default = flake.packages."MetaLambda:exe:MetaLambda";
+        apps.default = {
+          type = "app";
+          program = "${packages.default}/bin/MetaLambda";
         };
       });
 }
