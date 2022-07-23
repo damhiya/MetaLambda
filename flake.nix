@@ -10,14 +10,14 @@
   outputs = { self, nixpkgs, flake-utils, haskellNix, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        index-state = "2022-05-01T00:00:00Z";
+        index-state = "2022-07-23T00:00:00Z";
         overlays = [
           haskellNix.overlay
           (final: prev: {
             MetaLambda = final.haskell-nix.cabalProject' {
               inherit index-state;
               src = ./.;
-              compiler-nix-name = "ghc8107";
+              compiler-nix-name = "ghc902";
               shell.tools = {
                 cabal = {
                   inherit index-state;
