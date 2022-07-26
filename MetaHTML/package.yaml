@@ -1,0 +1,35 @@
+name: MetaHTML
+version: 0.1.0.0
+synopsis: Type-safe HTML template language
+description: Type-safe HTML template language based on Contextual Modal Type Theory
+category: LambdaCalculus
+github: damhiya/MetaLambda
+author: damhiya
+maintainer: damhiya@gmail.com
+copyright: (c) 2022 SoonWon Moon
+license: BSD-3-Clause
+license-file: LICENSE
+extra-source-files: CHANGELOG.md
+
+# common settings
+ghc-options: -Wall -Wno-unused-matches
+default-extensions:
+  - OverloadedStrings
+  - LambdaCase
+dependencies:
+  - base >=4.14 && <5.0
+  - text == 2.0
+
+# per-entry settings
+internal-libraries:
+  MetaHTMLLib:
+    source-dirs: src
+    dependencies:
+      - containers
+
+executables:
+  MetaHTML:
+    source-dirs: app
+    main: Main.hs
+    dependencies:
+      - MetaHTMLLib

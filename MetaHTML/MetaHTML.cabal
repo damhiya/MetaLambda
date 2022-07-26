@@ -1,0 +1,62 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.35.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           MetaHTML
+version:        0.1.0.0
+synopsis:       Type-safe HTML template language
+description:    Type-safe HTML template language based on Contextual Modal Type Theory
+category:       LambdaCalculus
+homepage:       https://github.com/damhiya/MetaLambda#readme
+bug-reports:    https://github.com/damhiya/MetaLambda/issues
+author:         damhiya
+maintainer:     damhiya@gmail.com
+copyright:      (c) 2022 SoonWon Moon
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/damhiya/MetaLambda
+
+library MetaHTMLLib
+  exposed-modules:
+      Syntax.Object
+  other-modules:
+      Paths_MetaHTML
+  autogen-modules:
+      Paths_MetaHTML
+  hs-source-dirs:
+      src
+  default-extensions:
+      OverloadedStrings
+      LambdaCase
+  ghc-options: -Wall -Wno-unused-matches
+  build-depends:
+      base >=4.14 && <5.0
+    , containers
+    , text ==2.0
+  default-language: Haskell2010
+
+executable MetaHTML
+  main-is: Main.hs
+  other-modules:
+      Paths_MetaHTML
+  autogen-modules:
+      Paths_MetaHTML
+  hs-source-dirs:
+      app
+  default-extensions:
+      OverloadedStrings
+      LambdaCase
+  ghc-options: -Wall -Wno-unused-matches
+  build-depends:
+      MetaHTMLLib
+    , base >=4.14 && <5.0
+    , text ==2.0
+  default-language: Haskell2010

@@ -33,6 +33,25 @@
                 };
               };
             };
+            MetaHTML = final.haskell-nix.cabalProject' {
+              inherit index-state;
+              src = ./MetaHTML;
+              compiler-nix-name = "ghc902";
+              shell.tools = {
+                cabal = {
+                  inherit index-state;
+                  version = "3.6.2.0";
+                };
+                haskell-language-server = {
+                  inherit index-state;
+                  version = "1.7.0.0";
+                };
+                hpack = {
+                  inherit index-state;
+                  version = "0.35.0";
+                };
+              };
+            };
           })
         ];
         pkgs = import nixpkgs {
