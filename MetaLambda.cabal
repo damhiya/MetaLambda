@@ -45,7 +45,6 @@ library MetaLambdaLib
   default-extensions:
       OverloadedStrings
       LambdaCase
-      FlexibleContexts
   ghc-options: -Wall -Wno-unused-matches
   build-depends:
       Earley
@@ -55,7 +54,7 @@ library MetaLambdaLib
     , mtl
     , prettyprinter
     , text ==2.0
-  default-language: Haskell2010
+  default-language: GHC2021
 
 executable MetaLambda
   main-is: Main.hs
@@ -68,8 +67,6 @@ executable MetaLambda
   default-extensions:
       OverloadedStrings
       LambdaCase
-      FlexibleContexts
-      FlexibleInstances
   ghc-options: -Wall -Wno-unused-matches
   build-depends:
       MetaLambdaLib
@@ -78,7 +75,7 @@ executable MetaLambda
     , megaparsec
     , mtl
     , text ==2.0
-  default-language: Haskell2010
+  default-language: GHC2021
 
 test-suite MetaLambdaTest
   type: exitcode-stdio-1.0
@@ -100,4 +97,4 @@ test-suite MetaLambdaTest
     , tasty
     , tasty-golden
     , text ==2.0
-  default-language: Haskell2010
+  default-language: GHC2021
