@@ -26,16 +26,15 @@ source-repository head
 
 library MetaLambdaLib
   exposed-modules:
-      Equality
-      Parser.Lexer
-      Parser.Parser
-      Parser.Syntax
-      PrettyPrinter
-      Reduction.Evaluation
-      Reduction.Substitution
-      Syntax
-      Typing
-      Util
+      MetaLambda.ConcreteSyntax.Lexer
+      MetaLambda.ConcreteSyntax.Parser
+      MetaLambda.ConcreteSyntax.PrettyPrinter
+      MetaLambda.ConcreteSyntax.Token
+      MetaLambda.Equality
+      MetaLambda.Evaluation
+      MetaLambda.Substitution
+      MetaLambda.Syntax
+      MetaLambda.Typing
   other-modules:
       Paths_MetaLambda
   autogen-modules:
@@ -48,11 +47,31 @@ library MetaLambdaLib
   ghc-options: -Wall -Wno-unused-matches
   build-depends:
       Earley
+    , Util
     , base >=4.14 && <5.0
     , containers
     , megaparsec
     , mtl
     , prettyprinter
+    , text ==2.0
+  default-language: GHC2021
+
+library Util
+  exposed-modules:
+      Util
+  other-modules:
+      Paths_MetaLambda
+  autogen-modules:
+      Paths_MetaLambda
+  hs-source-dirs:
+      util
+  default-extensions:
+      OverloadedStrings
+      LambdaCase
+  ghc-options: -Wall -Wno-unused-matches
+  build-depends:
+      base >=4.14 && <5.0
+    , mtl
     , text ==2.0
   default-language: GHC2021
 
@@ -70,6 +89,7 @@ executable MetaLambda
   ghc-options: -Wall -Wno-unused-matches
   build-depends:
       MetaLambdaLib
+    , Util
     , base >=4.14 && <5.0
     , haskeline
     , megaparsec

@@ -1,11 +1,11 @@
-module Parser.Lexer where
+module MetaLambda.ConcreteSyntax.Lexer where
 
 import           Control.Applicative
 import           Control.Monad.Except
 import           Data.Functor
 import           Data.Text
 import           Data.Void
-import           Parser.Syntax
+import           MetaLambda.ConcreteSyntax.Token
 import qualified Text.Megaparsec      as P
 import qualified Text.Megaparsec.Char as P
 

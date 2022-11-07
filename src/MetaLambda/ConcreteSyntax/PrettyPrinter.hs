@@ -1,7 +1,7 @@
-module PrettyPrinter where
+module MetaLambda.ConcreteSyntax.PrettyPrinter where
 
 import           Prettyprinter
-import           Syntax
+import           MetaLambda.Syntax
 
 prettyId :: Id -> Doc ann
 prettyId (Id x i) = pretty $ mconcat [x,"_",show i]

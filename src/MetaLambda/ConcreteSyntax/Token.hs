@@ -1,4 +1,4 @@
-module Parser.Syntax where
+module MetaLambda.ConcreteSyntax.Token where
 
 import           Text.Megaparsec.Pos
 

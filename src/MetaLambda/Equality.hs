@@ -1,7 +1,7 @@
-module Equality where
+module MetaLambda.Equality where
 
-import Syntax
-import Reduction.Substitution
+import MetaLambda.Syntax
+import MetaLambda.Substitution
 
 eqAlpha :: Term -> Term -> Bool
 eqAlpha (Var x) (Var x') = x == x'

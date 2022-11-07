@@ -1,6 +1,3 @@
-# configuration file for hpack
-# `hpack --force` to update MetaLambda.cabal
-
 name: MetaLambda
 version: 0.1.0.0
 synopsis: Contextual Modal Type Theory
@@ -26,9 +23,15 @@ dependencies:
 
 # per-entry settings
 internal-libraries:
+  Util:
+    source-dirs: util
+    dependencies:
+      - mtl
+
   MetaLambdaLib:
     source-dirs: src
     dependencies:
+      - Util
       - containers
       - mtl
       - megaparsec
@@ -40,6 +43,7 @@ executables:
     source-dirs: app
     main: Main.hs
     dependencies:
+      - Util
       - MetaLambdaLib
       - mtl
       - megaparsec

@@ -1,9 +1,9 @@
-module Typing where
+module MetaLambda.Typing where
 
 import           Control.Monad
 import           Control.Monad.Except
 
-import           Syntax
+import           MetaLambda.Syntax
 import           Util
 
 -- error

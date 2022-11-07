@@ -1,15 +1,15 @@
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE RecursiveDo   #-}
 
-module Parser.Parser where
+module MetaLambda.ConcreteSyntax.Parser where
 
 import           Control.Applicative
 import           Control.Monad.Except
 import           Data.Functor
 import qualified Text.Earley          as E
 
-import           Parser.Syntax
-import           Syntax
+import           MetaLambda.ConcreteSyntax.Token
+import           MetaLambda.Syntax
 
 type ParseError = ([Term], E.Report Token [Token])
 

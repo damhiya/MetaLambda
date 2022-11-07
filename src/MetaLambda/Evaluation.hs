@@ -1,7 +1,7 @@
-module Reduction.Evaluation where
+module MetaLambda.Evaluation where
 
-import           Reduction.Substitution
-import           Syntax
+import           MetaLambda.Substitution
+import           MetaLambda.Syntax
 
 invalid :: Term
 invalid = error "not type checked"

@@ -1,10 +1,10 @@
-module Reduction.Substitution where
+module MetaLambda.Substitution where
 
 import           Data.Map       (Map)
 import qualified Data.Map       as Map
 import           Data.Semigroup
 
-import           Syntax
+import           MetaLambda.Syntax
 
 -- trace used variable names
 type AllocId = String -> Maybe (Max Integer)

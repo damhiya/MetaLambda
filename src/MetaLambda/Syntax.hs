@@ -1,4 +1,4 @@
-module Syntax where
+module MetaLambda.Syntax where
 
 -- identifier
 data Id = Id !String !Integer deriving (Show, Eq, Ord)

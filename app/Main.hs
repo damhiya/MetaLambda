@@ -6,11 +6,11 @@ import qualified Data.Text                as T
 import           System.Console.Haskeline
 import qualified Text.Megaparsec          as P
 
-import           Parser.Lexer
-import           Parser.Parser
-import           PrettyPrinter
-import           Reduction.Evaluation
-import           Typing
+import           MetaLambda.ConcreteSyntax.Lexer
+import           MetaLambda.ConcreteSyntax.Parser
+import           MetaLambda.ConcreteSyntax.PrettyPrinter
+import           MetaLambda.Evaluation
+import           MetaLambda.Typing
 import           Util
 
 data ReplError
