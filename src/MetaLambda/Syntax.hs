@@ -1,20 +1,31 @@
 module MetaLambda.Syntax where
 
+import Numeric.Natural
+
 -- identifier
-data Id = Id !String !Integer deriving (Show, Eq, Ord)
-data GId = GId !String !Integer deriving (Show, Eq)
+data Id = Id !String !Natural deriving (Show, Eq, Ord)
 
--- type and local contex
-data Type = Base | Arr Type Type | BoxT LCtx Type deriving (Show, Eq)
-type LCtx = [(Id, Type)]
-type LECtx = [Id]
+-- mode, type and context
+type Mode = Natural
 
--- term definition
+data Type where
+  Upshift :: Ctx -> Type -> Type
+  Downshift :: Type -> Type
+  Arr :: Type -> Type -> Type
+  Base :: Type
+  deriving (Eq, Show)
+
+type Ctx = [(Id, Type)]
+
+-- term and substitution
 data Term
   = Var Id
   | Lam Id Type Term
   | App Term Term
-  | Box LCtx Term
-  | LetBox LECtx GId Term Term
-  | Clo GId [Term]
+  | Lift Ctx Term
+  | Unlift Term Subst
+  | Return Term
+  | LetReturn Id Term Term
   deriving Show
+
+type Subst = [Term]
