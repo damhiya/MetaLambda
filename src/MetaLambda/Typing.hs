@@ -23,8 +23,9 @@ appendCtx (ctx:ctxs) 0 xa = (xa:ctx) : ctxs
 appendCtx []         n xa = []       : appendCtx [] (n-1) xa
 appendCtx (ctx:ctxs) n xa = ctx      : appendCtx ctxs (n-1) xa
 
-(@>) :: Ctxs -> (Id, Type) -> Ctxs
-(@>) = \ctxs xa -> appendCtx ctxs 0 xa
+infixl 5 @>
+(@>) :: Ctx -> (Id, Type) -> Ctx
+(@>) = flip (:)
 
 localCtx :: Ctxs -> Ctx
 localCtx []         = []
@@ -41,7 +42,7 @@ lookupId ctx x = lookup x ctx
 inferType :: MonadError TypeError m => Mode -> Ctxs -> Term -> m Type
 inferType m ctxs (Var x) = with LookUpError $ lookupId (localCtx ctxs) x
 inferType m ctxs (Lam x a t) = do
-  b <- inferType m (ctxs @> (x,a)) t
+  b <- inferType m (appendCtx ctxs 0 (x,a)) t
   pure (Arr a b)
 inferType m ctxs (App t1 t2) = do
   inferType m ctxs t1 >>= \case
