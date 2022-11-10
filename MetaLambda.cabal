@@ -26,13 +26,13 @@ source-repository head
 
 library MetaLambdaLib
   exposed-modules:
-      MetaLambda.ConcreteSyntax.Lexer
-      MetaLambda.ConcreteSyntax.Parser
-      MetaLambda.ConcreteSyntax.PrettyPrinter
-      MetaLambda.ConcreteSyntax.Token
-      MetaLambda.Equality
-      MetaLambda.Evaluation
-      MetaLambda.Substitution
+      -- MetaLambda.ConcreteSyntax.Lexer
+      -- MetaLambda.ConcreteSyntax.Parser
+      -- MetaLambda.ConcreteSyntax.PrettyPrinter
+      -- MetaLambda.ConcreteSyntax.Token
+      -- MetaLambda.Equality
+      -- MetaLambda.Evaluation
+      -- MetaLambda.Substitution
       MetaLambda.Syntax
       MetaLambda.Typing
   other-modules:
