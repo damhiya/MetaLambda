@@ -21,7 +21,7 @@
               shell.tools = {
                 cabal = {
                   inherit index-state;
-                  version = "3.6.2.0";
+                  version = "3.8.1.0";
                 };
                 haskell-language-server = {
                   inherit index-state;
