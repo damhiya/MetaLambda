@@ -1,5 +1,6 @@
 module MetaLambda.Typing where
 
+import           Numeric.Natural
 import           Control.Monad
 import           Control.Monad.Except
 
@@ -13,46 +14,60 @@ data TypeError
   | GuardError
   deriving Show
 
--- global context
-type GCtx = [(GId, LCtx, Type)]
+-- Context and it's operations
+type Ctxs = [Ctx]
 
--- lookup functions
-lookupId :: LCtx -> Id -> Maybe Type
+appendCtx :: Ctxs -> Natural -> (Id, Type) -> Ctxs
+appendCtx []         0 xa = [[xa]]
+appendCtx (ctx:ctxs) 0 xa = (xa:ctx) : ctxs
+appendCtx []         n xa = []       : appendCtx [] (n-1) xa
+appendCtx (ctx:ctxs) n xa = ctx      : appendCtx ctxs (n-1) xa
+
+(@>) :: Ctxs -> (Id, Type) -> Ctxs
+(@>) = \ctxs xa -> appendCtx ctxs 0 xa
+
+localCtx :: Ctxs -> Ctx
+localCtx []         = []
+localCtx (ctx:ctxs) = ctx
+
+globalCtx :: Ctxs -> Ctxs
+globalCtx []         = []
+globalCtx (ctx:ctxs) = ctxs
+
+lookupId :: Ctx -> Id -> Maybe Type
 lookupId ctx x = lookup x ctx
 
-lookupGId :: GCtx -> GId -> Maybe (LCtx, Type)
-lookupGId gctx u = lookup u $ map (\(x,y,z) -> (x,(y,z))) gctx
-
--- erase type in the context
-erase :: LCtx -> LECtx
-erase = map fst
-
-inferType :: MonadError TypeError m => GCtx -> LCtx -> Term -> m Type
-inferType gctx ctx (Var x) = with LookUpError $ lookupId ctx x
-inferType gctx ctx (Lam x ta e) = do
-  tb <- inferType gctx ((x,ta) : ctx) e
-  pure (Arr ta tb)
-inferType gctx ctx (App e1 e2) = do
-  inferType gctx ctx e1 >>= \case
-    Arr ta tb -> do
-      ta' <- inferType gctx ctx e2
-      with GuardError $ guard (ta == ta')
-      pure tb
+-- type inference
+inferType :: MonadError TypeError m => Mode -> Ctxs -> Term -> m Type
+inferType m ctxs (Var x) = with LookUpError $ lookupId (localCtx ctxs) x
+inferType m ctxs (Lam x a t) = do
+  b <- inferType m (ctxs @> (x,a)) t
+  pure (Arr a b)
+inferType m ctxs (App t1 t2) = do
+  inferType m ctxs t1 >>= \case
+    Arr a b -> do
+      a' <- inferType m ctxs t2
+      guardWith GuardError (a == a')
+      pure b
     _ -> throwError MatchError
-inferType gctx ctx (Box octx oe) = do
-  ot <- inferType gctx octx oe
-  pure (BoxT octx ot)
-inferType gctx ctx (LetBox oectx u e1 e2) =
-  inferType gctx ctx e1 >>= \case
-    BoxT octx ot -> do
-      with GuardError $ guard (oectx == erase octx)
-      inferType ((u, octx, ot) : gctx) ctx e2
+inferType m ctxs (Lift ctx t) = do
+  guardWith GuardError (m > 0)
+  a <- inferType (m - 1) (ctx:ctxs) t
+  pure (Upshift ctx a)
+inferType m ctxs (Unlift t s) = do
+  inferType (m + 1) (globalCtx ctxs) t >>= \case
+    Upshift ctx a -> do
+      forM_ (zip (map snd ctx) s) $ \(a, t) -> do
+        a' <- inferType m ctxs t
+        guardWith GuardError (a == a')
+      pure a
     _ -> throwError MatchError
-inferType gctx ctx (Clo u es) = do
-  (octx, ot) <- with LookUpError $ lookupGId gctx u
-  with GuardError $ guard (length octx == length es)
-  let ts = map snd octx
-  forM_ (zip ts es) $ \(t, e) -> do
-    t' <- inferType gctx ctx e
-    with GuardError $ guard (t == t')
-  pure ot
+inferType m ctxs (Return t) = do
+  a <- inferType (m + 1) (globalCtx ctxs) t
+  pure (Downshift a)
+inferType m ctxs (LetReturn u t1 t2) = do
+  inferType m ctxs t1 >>= \case
+    Downshift a -> do
+      b <- inferType m (appendCtx ctxs 1 (u,a)) t2
+      pure b
+    _ -> throwError MatchError
