@@ -52,3 +52,27 @@ term3 = Return(Return(
     x = Id "x" 0
     vf = Var f
     vx = Var x
+
+-- term4 :{0} [[( f : (x : Base |- Base) |- (x : Base |- Base) )]]
+-- term4 = let return u = term2 in return(
+--           let return v = u in return(
+--             lift(f. v with (v with f) )
+--         ))
+term4 :: Term
+term4 = LetReturn u term2 (Return (
+          LetReturn v vu (Return (
+            Lift [(f,btb)] (
+              Unlift vv [Unlift vv [vf]]
+            )
+          ))
+        ))
+  where
+    u = Id "u" 0
+    v = Id "v" 0
+    f = Id "f" 0
+    x = Id "x" 0
+    vu = Var u
+    vv = Var v
+    vf = Var f
+    b = Base
+    btb = Upshift [(x, b)] b
