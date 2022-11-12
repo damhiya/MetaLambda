@@ -3,11 +3,12 @@ module MetaLambda.Substitution where
 import           Data.Map       (Map)
 import qualified Data.Map       as Map
 import           Data.Semigroup
+import Numeric.Natural
 
 import           MetaLambda.Syntax
 
 -- trace used variable names
-type AllocId = String -> Maybe (Max Integer)
+type AllocId = String -> Maybe (Max Natural)
 
 newId :: AllocId -> Id -> Id
 newId f (Id x i) = Id x (maybe i (+1) (getMax <$> f x))
@@ -17,64 +18,41 @@ singleton (Id x i) y
   | x == y    = Just (Max i)
   | otherwise = Nothing
 
-fromTerm :: Term -> AllocId
-fromTerm (Var x)            = singleton x
-fromTerm (Lam _ _ e)        = fromTerm e
-fromTerm (App e1 e2)        = fromTerm e1 <> fromTerm e2
-fromTerm (Box _ _)          = mempty
-fromTerm (LetBox _ _ e1 e2) = fromTerm e1 <> fromTerm e2
-fromTerm (Clo _ es)         = mconcat (map fromTerm es)
+fromTerm :: Natural -> Term -> AllocId
+fromTerm n (Var y)      | n == 0    = singleton y
+                        | otherwise = mempty
+fromTerm n (Lam y a t)              = fromTerm n t
+fromTerm n (App t1 t2)              = fromTerm n t1 <> fromTerm n t2
+fromTerm n (Lift ctx t)             = fromTerm (n+1) t
+fromTerm n (Unlift t s) | n == 0    = foldMap (fromTerm n) s
+                        | otherwise = foldMap (fromTerm n) s <> fromTerm (n-1) t 
+fromTerm n (Return t)   | n == 0    = mempty
+                        | otherwise = fromTerm (n-1) t
+fromTerm n (LetReturn u t1 t2)      = fromTerm n t1 <> fromTerm n t2
 
 -- substitutions
-renameVar :: (Id, Id) -> Term -> Term
-renameVar (x, y) = subst (x, Var y)
+ssubst :: Natural -> [(Id, Term)] -> Term -> Term
+ssubst = \n s t -> go n (Map.fromList s) t
+  where
+    invalid :: Term
+    invalid = error "invalid simultaneous substitution"
 
-renameGVar :: (GId, GId) -> Term -> Term
-renameGVar s e@(Var _) = e
-renameGVar s (Lam x t e) = Lam x t (renameGVar s e)
-renameGVar s (App e1 e2) = App (renameGVar s e1) (renameGVar s e2)
-renameGVar s (Box octx e) = Box octx (renameGVar s e)
-renameGVar s@(u, v) e@(LetBox oectx w e1 e2)
-  | w == u    = e
-  | otherwise = LetBox oectx w (renameGVar s e1) (renameGVar s e2)
-renameGVar s@(u, v) (Clo w es)
-  | w == u    = Clo v (renameGVar s <$> es)
-  | otherwise = Clo w (renameGVar s <$> es)
-
-subst :: (Id, Term) -> Term -> Term
-subst (x, e) (Var y)
-  | y == x    = e
-  | otherwise = Var y
-subst s@(x, e) (Lam y t e1)
-  | y == x    = Lam y t e1
-  | otherwise =
-    let y' = newId (singleton x <> fromTerm e) y
-    in Lam y' t (subst s . renameVar (y, y') $ e1)
-subst s (App e1 e2) = App (subst s e1) (subst s e2)
-subst s e@(Box _ _) = e
-subst s (LetBox oectx u e1 e2) = LetBox oectx u (subst s e1) (subst s e2)
-subst s (Clo u es) = Clo u (subst s <$> es)
-
-substGlobal :: (GId, LECtx, Term) -> Term -> Term
-substGlobal s e@(Var _) = e
-substGlobal s (Lam x t e) = Lam x t (substGlobal s e)
-substGlobal s (App e1 e2) = App (substGlobal s e1) (substGlobal s e2)
-substGlobal s (Box octx oe) = Box octx (substGlobal s oe)
-substGlobal s@(u, _, _) (LetBox oectx v e1 e2)
-  | v == u    = LetBox oectx v (substGlobal s e1) e2
-  | otherwise = LetBox oectx v (substGlobal s e1) (substGlobal s e2)
-substGlobal s@(u,oectx,oe) e@(Clo v es)
-  | v == u    = let es' = map (substGlobal s) es
-                in substSim (Map.fromList $ zip oectx es') oe
-  | otherwise = e
-
-substSim :: Map Id Term -> Term -> Term
-substSim s (Var x) = Map.findWithDefault (error "simultaneous substitution failed") x s
-substSim s (Lam x t e) =
-  let x' = newId (foldMap fromTerm s) x
-      s' = Map.union (Map.singleton x (Var x')) s
-  in Lam x' t (substSim s' e)
-substSim s (App e1 e2) = App (substSim s e1) (substSim s e2)
-substSim s e@(Box _ _) = e
-substSim s (LetBox oectx u e1 e2) = LetBox oectx u (substSim s e1) (substSim s e2)
-substSim s (Clo u es) = Clo u (substSim s <$> es)
+    go :: Natural -> Map Id Term -> Term -> Term
+    go n s t@(Var x)            | n == 0    = Map.findWithDefault invalid x s
+                                | otherwise = t
+    go n s (Lam x a t)          | n == 0    = Lam x' a (go n s' t)
+                                | otherwise = Lam x  a (go n s  t)
+      where
+        x' = newId (foldMap (fromTerm 0) s) x
+        s' = Map.union (Map.singleton x (Var x')) s
+    go n s (App t1 t2)                      = App (go n s t1) (go n s t2)
+    go n s (Lift ctx t)                     = Lift ctx (go (n+1) s t)
+    go n s (Unlift t s')        | n == 0    = Unlift t              (go n s <$> s')
+                                | otherwise = Unlift (go (n-1) s t) (go n s <$> s')
+    go n s tt@(Return t)        | n == 0    = tt
+                                | otherwise = Return (go (n-1) s t)
+    go n s (LetReturn u t1 t2)  | n == 1    = LetReturn u' (go n s' t1) (go n s' t2)
+                                | otherwise = LetReturn u  (go n s  t1) (go n s  t2)
+      where
+        u' = newId (foldMap (fromTerm 0) s) u
+        s' = Map.union (Map.singleton u (Var u')) s

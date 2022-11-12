@@ -31,9 +31,9 @@ library MetaLambdaLib
       -- MetaLambda.ConcreteSyntax.PrettyPrinter
       -- MetaLambda.ConcreteSyntax.Token
       -- MetaLambda.Equality
-      -- MetaLambda.Evaluation
+      MetaLambda.Evaluation
       MetaLambda.Examples
-      -- MetaLambda.Substitution
+      MetaLambda.Substitution
       MetaLambda.Syntax
       MetaLambda.Typing
   other-modules:
