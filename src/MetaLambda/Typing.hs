@@ -17,11 +17,13 @@ data TypeError
 -- Context and it's operations
 type Ctxs = [Ctx]
 
-appendCtx :: Ctxs -> Natural -> (Id, Type) -> Ctxs
-appendCtx []         0 xa = [[xa]]
-appendCtx (ctx:ctxs) 0 xa = (xa:ctx) : ctxs
-appendCtx []         n xa = []       : appendCtx [] (n-1) xa
-appendCtx (ctx:ctxs) n xa = ctx      : appendCtx ctxs (n-1) xa
+appendCtx :: Mode -> Ctxs -> Mode -> (Id, Type) -> Ctxs
+appendCtx = \m ctxs n xa -> go ctxs (n-m) xa
+  where
+    go []         0 xa = [xa]     : []
+    go (ctx:ctxs) 0 xa = (xa:ctx) : ctxs
+    go []         n xa = []       : go []   (n-1) xa
+    go (ctx:ctxs) n xa = ctx      : go ctxs (n-1) xa
 
 infixl 5 @>
 (@>) :: Ctx -> (Id, Type) -> Ctx
@@ -31,9 +33,12 @@ localCtx :: Ctxs -> Ctx
 localCtx []         = []
 localCtx (ctx:ctxs) = ctx
 
-globalCtx :: Ctxs -> Ctxs
-globalCtx []         = []
-globalCtx (ctx:ctxs) = ctxs
+globalCtx :: Mode -> Ctxs -> Mode -> Ctxs
+globalCtx = \m ctxs n -> go ctxs (n-m)
+  where
+    go ctxs     0 = ctxs
+    go []       n = []
+    go (_:ctxs) n = go ctxs (n-1)
 
 lookupId :: Ctx -> Id -> Maybe Type
 lookupId ctx x = lookup x ctx
@@ -42,7 +47,7 @@ lookupId ctx x = lookup x ctx
 inferType :: MonadError TypeError m => Mode -> Ctxs -> Term -> m Type
 inferType m ctxs (Var x) = with LookUpError $ lookupId (localCtx ctxs) x
 inferType m ctxs (Lam x a t) = do
-  b <- inferType m (appendCtx ctxs 0 (x,a)) t
+  b <- inferType m (appendCtx m ctxs m (x,a)) t
   pure (Arr a b)
 inferType m ctxs (App t1 t2) = do
   inferType m ctxs t1 >>= \case
@@ -56,7 +61,7 @@ inferType m ctxs (Lift ctx t) = do
   a <- inferType (m - 1) (ctx:ctxs) t
   pure (Upshift ctx a)
 inferType m ctxs (Unlift t s) = do
-  inferType (m + 1) (globalCtx ctxs) t >>= \case
+  inferType (m + 1) (globalCtx m ctxs (m+1)) t >>= \case
     Upshift ctx a -> do
       forM_ (zip (map snd ctx) s) $ \(a, t) -> do
         a' <- inferType m ctxs t
@@ -64,11 +69,11 @@ inferType m ctxs (Unlift t s) = do
       pure a
     _ -> throwError MatchError
 inferType m ctxs (Return t) = do
-  a <- inferType (m + 1) (globalCtx ctxs) t
+  a <- inferType (m + 1) (globalCtx m ctxs (m+1)) t
   pure (Downshift a)
 inferType m ctxs (LetReturn u t1 t2) = do
   inferType m ctxs t1 >>= \case
     Downshift a -> do
-      b <- inferType m (appendCtx ctxs 1 (u,a)) t2
+      b <- inferType m (appendCtx m ctxs (m+1) (u,a)) t2
       pure b
     _ -> throwError MatchError

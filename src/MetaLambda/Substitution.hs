@@ -18,41 +18,43 @@ singleton (Id x i) y
   | x == y    = Just (Max i)
   | otherwise = Nothing
 
-fromTerm :: Natural -> Term -> AllocId
-fromTerm n (Var y)      | n == 0    = singleton y
-                        | otherwise = mempty
-fromTerm n (Lam y a t)              = fromTerm n t
-fromTerm n (App t1 t2)              = fromTerm n t1 <> fromTerm n t2
-fromTerm n (Lift ctx t)             = fromTerm (n+1) t
-fromTerm n (Unlift t s) | n == 0    = foldMap (fromTerm n) s
-                        | otherwise = foldMap (fromTerm n) s <> fromTerm (n-1) t 
-fromTerm n (Return t)   | n == 0    = mempty
-                        | otherwise = fromTerm (n-1) t
-fromTerm n (LetReturn u t1 t2)      = fromTerm n t1 <> fromTerm n t2
+fromTerm :: Mode -> Term -> Mode -> AllocId
+-- m <= n
+fromTerm m (Var y)             n | m == n    = singleton y
+                                 | otherwise = mempty
+fromTerm m (Lam y a t)         n             = fromTerm m t n
+fromTerm m (App t1 t2)         n             = fromTerm m t1 n <> fromTerm m t2 n
+fromTerm m (Lift ctx t)        n             = fromTerm (m-1) t n
+fromTerm m (Unlift t s)        n | m == n    = foldMap (\t -> fromTerm m t n) s
+                                 | otherwise = foldMap (\t -> fromTerm m t n) s <> fromTerm (m+1) t n
+fromTerm m (Return t)          n | m == n    = mempty
+                                 | otherwise = fromTerm (m+1) t n
+fromTerm m (LetReturn u t1 t2) n             = fromTerm m t1 n <> fromTerm m t2 n
 
--- substitutions
-ssubst :: Natural -> [(Id, Term)] -> Term -> Term
-ssubst = \n s t -> go n (Map.fromList s) t
+-- simultaneous substitutions
+ssubst :: Mode -> [(Id, Term)] -> Mode -> Term -> Term
+ssubst = \m s n t -> go m (Map.fromList s) n t
   where
     invalid :: Term
     invalid = error "invalid simultaneous substitution"
 
-    go :: Natural -> Map Id Term -> Term -> Term
-    go n s t@(Var x)            | n == 0    = Map.findWithDefault invalid x s
-                                | otherwise = t
-    go n s (Lam x a t)          | n == 0    = Lam x' a (go n s' t)
-                                | otherwise = Lam x  a (go n s  t)
+    -- m >= n
+    go :: Mode -> Map Id Term -> Mode -> Term -> Term
+    go m s n t@(Var x)           | m == n    = Map.findWithDefault invalid x s
+                                 | otherwise = t
+    go m s n (Lam x a t)         | m == n    = Lam x' a (go m s' n t)
+                                 | otherwise = Lam x  a (go m s  n t)
       where
-        x' = newId (foldMap (fromTerm 0) s) x
+        x' = newId (foldMap (\t -> fromTerm m t m) s) x
         s' = Map.union (Map.singleton x (Var x')) s
-    go n s (App t1 t2)                      = App (go n s t1) (go n s t2)
-    go n s (Lift ctx t)                     = Lift ctx (go (n+1) s t)
-    go n s (Unlift t s')        | n == 0    = Unlift t              (go n s <$> s')
-                                | otherwise = Unlift (go (n-1) s t) (go n s <$> s')
-    go n s tt@(Return t)        | n == 0    = tt
-                                | otherwise = Return (go (n-1) s t)
-    go n s (LetReturn u t1 t2)  | n == 1    = LetReturn u' (go n s' t1) (go n s' t2)
-                                | otherwise = LetReturn u  (go n s  t1) (go n s  t2)
+    go m s n (App t1 t2)                     = App (go m s n t1) (go m s n t2)
+    go m s n (Lift ctx t)                    = Lift ctx (go m s (n-1) t)
+    go m s n (Unlift t s')       | m == n    = Unlift t                (go m s n <$> s')
+                                 | otherwise = Unlift (go m s (n+1) t) (go m s n <$> s')
+    go m s n tt@(Return t)       | m == n    = tt
+                                 | otherwise = Return (go m s (n+1) t)
+    go m s n (LetReturn u t1 t2) | m == n+1  = LetReturn u' (go m s' n t1) (go m s' n t2)
+                                 | otherwise = LetReturn u  (go m s  n t1) (go m s  n t2)
       where
-        u' = newId (foldMap (fromTerm 0) s) u
+        u' = newId (foldMap (\t -> fromTerm m t m) s) u
         s' = Map.union (Map.singleton u (Var u')) s
