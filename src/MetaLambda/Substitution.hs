@@ -53,8 +53,8 @@ ssubst = \m s n t -> go m (Map.fromList s) n t
                                  | otherwise = Unlift (go m s (n+1) t) (go m s n <$> s')
     go m s n tt@(Return t)       | m == n    = tt
                                  | otherwise = Return (go m s (n+1) t)
-    go m s n (LetReturn u t1 t2) | m == n+1  = LetReturn u' (go m s' n t1) (go m s' n t2)
-                                 | otherwise = LetReturn u  (go m s  n t1) (go m s  n t2)
+    go m s n (LetReturn u t1 t2) | m == n+1  = LetReturn u' (go m s n t1) (go m s' n t2)
+                                 | otherwise = LetReturn u  (go m s n t1) (go m s  n t2)
       where
         u' = newId (foldMap (\t -> fromTerm m t m) s) u
         s' = Map.union (Map.singleton u (Var u')) s
