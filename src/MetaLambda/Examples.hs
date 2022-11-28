@@ -76,3 +76,22 @@ term4 = LetReturn u term2 (Return (
     vf = Var f
     b = Base
     btb = Upshift [(x, b)] b
+
+-- term5 :{0} [(x : Base |- Base)]
+-- term5 = let return u = return(fn x -> x) in
+--         let return v = return(lift(x.x)) in
+--         return(lift(x. (u v) with x ))
+term5 :: Term
+term5 = LetReturn u (Return (Lam x btb (Var x))) (
+        LetReturn v (Return (Lift [(x,b)] vx)) (
+          Return (Lift [(x,b)] (Unlift (App vu vv) [vx]))
+        ))
+  where
+    u = Id "u" 0
+    v = Id "v" 0
+    x = Id "x" 0
+    vu = Var u
+    vv = Var v
+    vx = Var x
+    b = Base
+    btb = Upshift [(x,b)] b
