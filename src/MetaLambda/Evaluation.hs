@@ -4,31 +4,37 @@ import           MetaLambda.Substitution
 import           MetaLambda.Syntax
 
 -- call by name evaluation
-eval :: Mode -> Term -> Term
-eval = \m t -> go m t m
-  where
-    invalid :: Term
-    invalid = error "not type checked"
+(//) :: [Term] -> Ctx -> [(Id, Term)]
+(//) s ctx = zip (map fst ctx) s
 
-    -- m <= n
-    go :: Mode -> Term -> Mode -> Term
-    go m tt@(Var _)          n | m == n    = invalid
-                               | otherwise = tt
-    go m tt@(Lam x a t)      n | m == n    = tt
-                               | otherwise = Lam x a (go m t n)
-    go m (App t1 t2)         n | m == n    =
-      case go m t1 n of
-        Lam x _ t1' -> go m (ssubst m [(x, t2)] m t1') n
-        _           -> invalid
-                               | otherwise = App (go m t1 n) (go m t2 n)
-    go m (Lift ctx t)        n             = Lift ctx (go (m-1) t n)
-    go m (Unlift t s)        n | m == n    =
-      case go (m+1) t (n+1) of
-        Lift ctx t' -> go m (ssubst m (zip (map fst ctx) s) m t') n
-        _           -> invalid
-                               | otherwise = undefined
-    go m t@(Return _)        n | m == n = t
-    go m (LetReturn u t1 t2) n | m == n =
-      case go m t1 n of
-        Return t1' -> go m (ssubst (m+1) [(u, t1')] m t2) n
-        _          -> invalid
+splice, evaluate :: Mode -> Term -> Term
+splice = \m t -> go m m t
+  where
+    go :: Mode -> Mode -> Term -> Term
+    go m n t = case t of
+      Var x                   -> t
+      Lam x a t1              -> Lam x a (go m n t1)
+      App t1 t2               -> App (go m n t1) (go m n t2)
+      Lift ctx t1             -> Lift ctx (go m (n-1) t1)
+      Unlift t1 s | m < n+1   -> case evaluate (n+1) t1 of
+                                   Lift ctx t1' -> ssubst m ((go m n <$> s) // ctx) n t1'
+                                   t1'          -> Unlift t1' (go m n <$> s)
+                  | otherwise -> Unlift (go m (n+1) t1) (go m n <$> s)
+      Return t1   | m < n+1   -> Return (evaluate (n+1) t1)
+                  | otherwise -> Return (go m (n+1) t1)
+      LetReturn u t1 t2       -> LetReturn u (go m n t1) (go m n t2)
+evaluate = \m t -> go m (splice m t)
+  where
+    go :: Mode -> Term -> Term
+    go m t = case t of
+      Var x             -> t
+      Lam x a t1        -> t
+      App t1 t2         -> case go m t1 of
+                             Lam x a t1' -> go m (subst m (x, t1') m t2)
+                             t1'         -> App t1' t2
+      Lift ctx t1       -> Lift ctx (splice (m-1) t1)
+      Unlift t1 s       -> t
+      Return t1         -> t
+      LetReturn u t1 t2 -> case go m t1 of
+                             Return t1' -> evaluate m (subst (m+1) (u, t1') m t2)
+                             t1'        -> LetReturn u t1' t2

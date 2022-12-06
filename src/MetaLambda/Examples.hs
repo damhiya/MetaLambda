@@ -2,6 +2,7 @@ module MetaLambda.Examples where
 
 import MetaLambda.Syntax
 import MetaLambda.Typing
+import MetaLambda.Evaluation
 
 inferType' :: Mode -> Ctxs -> Term -> Either TypeError Type
 inferType' = inferType
