@@ -1,6 +1,8 @@
 {
   description = "MetaLambda - contextual modal type theory";
 
+  nixConfig.extra-substituters = [ "https://cache.iog.io" ];
+
   inputs = {
     haskellNix.url = "github:input-output-hk/haskell.nix";
     nixpkgs.follows = "haskellNix/nixpkgs-unstable";
