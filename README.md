@@ -1,5 +1,10 @@
 # MetaLambda
-Implementation of Contextual Modal Type Theory[Nanevski et al. 2008]
+Implementaion of contextual full-structural adjoint type system (no substructral features)
+
+* A Modal Analysis of Staged Computation[Davies and Pfenning. 2001]
+* Contextual Modal Type Theory[Nanevski et al. 2008]
+* Mœbius: Metaprogramming using Contextual Types[Jang et al. 2021]
+* Modal Logics and Types : Looking Back and Looking Forward[Pfenning. 2022]
 
 ## Example
 ```
