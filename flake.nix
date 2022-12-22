@@ -6,7 +6,7 @@
   inputs = {
     haskellNix.url = "github:input-output-hk/haskell.nix";
     nixpkgs.follows = "haskellNix/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    flake-utils.follows = "haskellNix/flake-utils";
   };
 
   outputs = { self, nixpkgs, flake-utils, haskellNix, ... }:
