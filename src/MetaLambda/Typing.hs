@@ -2,6 +2,10 @@ module MetaLambda.Typing where
 
 import           Control.Monad
 import           Control.Monad.Except
+import Data.List.NonEmpty (NonEmpty(..))
+import qualified Data.Map as M
+import Data.Functor.Compose
+import Data.Foldable
 
 import           MetaLambda.Syntax
 import           Util
@@ -13,40 +17,32 @@ data TypeError
   | GuardError
   deriving Show
 
--- Context and it's operations
-type Ctxs = [Ctx]
+-- Context operations
+appendVar :: Ord mo => Ctxs mo -> mo -> (Id, Type mo) -> Ctxs mo
+appendVar ctxs m xa = M.alter (\ctx -> Just (xa :| (toList . Compose) ctx)) m ctxs
 
-appendCtx :: Mode -> Ctxs -> Mode -> (Id, Type) -> Ctxs
-appendCtx = \m ctxs n xa -> go ctxs (n-m) xa
-  where
-    go []         0 xa = [xa]     : []
-    go (ctx:ctxs) 0 xa = (xa:ctx) : ctxs
-    go []         n xa = []       : go []   (n-1) xa
-    go (ctx:ctxs) n xa = ctx      : go ctxs (n-1) xa
+appendCtx :: Ord mo => Ctxs mo -> mo -> Ctx mo -> Ctxs mo
+appendCtx ctxs m [] = ctxs
+appendCtx ctxs m (xa:ctx) = M.insert m (xa :| ctx) ctxs
 
 infixl 5 @>
-(@>) :: Ctx -> (Id, Type) -> Ctx
+(@>) :: Ctx mo -> (Id, Type mo) -> Ctx mo
 (@>) = flip (:)
 
-localCtx :: Ctxs -> Ctx
-localCtx []         = []
-localCtx (ctx:ctxs) = ctx
+localCtx :: Ord mo => Ctxs mo -> mo -> Ctx mo
+localCtx ctxs m = (toList . Compose . M.lookup m) ctxs
 
-globalCtx :: Mode -> Ctxs -> Mode -> Ctxs
-globalCtx = \m ctxs n -> go ctxs (n-m)
-  where
-    go ctxs     0 = ctxs
-    go []       n = []
-    go (_:ctxs) n = go ctxs (n-1)
+globalCtx :: (Mode mo, Ord mo) => Ctxs mo -> mo -> Ctxs mo
+globalCtx ctxs m = M.filterWithKey (\n _ -> globalCtxOf m n) ctxs
 
-lookupId :: Ctx -> Id -> Maybe Type
+lookupId :: Ctx mo -> Id -> Maybe (Type mo)
 lookupId ctx x = lookup x ctx
 
 -- type inference
-inferType :: MonadError TypeError m => Mode -> Ctxs -> Term -> m Type
-inferType m ctxs (Var x) = with LookUpError $ lookupId (localCtx ctxs) x
+inferType :: (Mode mo, Ord mo, MonadError TypeError m) => mo -> Ctxs mo -> Term mo -> m (Type mo)
+inferType m ctxs (Var x) = with LookUpError $ lookupId (localCtx ctxs m) x
 inferType m ctxs (Lam x a t) = do
-  b <- inferType m (appendCtx m ctxs m (x,a)) t
+  b <- inferType m (appendVar ctxs m (x,a)) t
   pure (Arr a b)
 inferType m ctxs (App t1 t2) = do
   inferType m ctxs t1 >>= \case
@@ -56,12 +52,12 @@ inferType m ctxs (App t1 t2) = do
       pure b
     _ -> throwError MatchError
 inferType m ctxs (Lift n ctx t) = do
-  guardWith GuardError (m == n + 1)
-  a <- inferType n (ctx:ctxs) t
+  guardWith GuardError (hasUpshift n m)
+  a <- inferType n (appendCtx ctxs n ctx) t
   pure (Upshift n ctx a)
 inferType m ctxs (Unlift n t s) = do
-  guardWith GuardError (m+1 == n)
-  inferType n (globalCtx m ctxs n) t >>= \case
+  guardWith GuardError (hasUpshift m n)
+  inferType n (globalCtx ctxs n) t >>= \case
     Upshift m' ctx a -> do
       guardWith GuardError (m == m')
       forM_ (zip (map snd ctx) s) $ \(a, t) -> do
@@ -70,14 +66,14 @@ inferType m ctxs (Unlift n t s) = do
       pure a
     _ -> throwError MatchError
 inferType m ctxs (Return n t) = do
-  guardWith GuardError (m+1 == n)
-  a <- inferType n (globalCtx m ctxs n) t
+  guardWith GuardError (hasDownshift m n)
+  a <- inferType n (globalCtx ctxs n) t
   pure (Downshift n a)
 inferType m ctxs (LetReturn n u t1 t2) = do
-  guardWith GuardError (m+1 == n)
+  guardWith GuardError (hasDownshift m n)
   inferType m ctxs t1 >>= \case
     Downshift n' a -> do
       guardWith GuardError (n == n')
-      b <- inferType m (appendCtx m ctxs n (u,a)) t2
+      b <- inferType m (appendVar ctxs n (u,a)) t2
       pure b
     _ -> throwError MatchError

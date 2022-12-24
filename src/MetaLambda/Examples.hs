@@ -4,12 +4,12 @@ import MetaLambda.Syntax
 import MetaLambda.Typing
 import MetaLambda.Evaluation
 
-inferType' :: Mode -> Ctxs -> Term -> Either TypeError Type
+inferType' :: StdMode -> Ctxs StdMode -> Term StdMode -> Either TypeError (Type StdMode)
 inferType' = inferType
 
 -- term1 :{0} [( f : Base -> Base, x : Base |- Base )]
 -- term1 = return(lift(f,x. f (f (f x))))
-term1 :: Term
+term1 :: Term StdMode
 term1 = Return 1 (Lift 0 ([] @> (f, btb) @> (x, b)) (
           App vf (App vf (App vf vx))
         ))
@@ -23,7 +23,7 @@ term1 = Return 1 (Lift 0 ([] @> (f, btb) @> (x, b)) (
 
 -- term2 :{0} [[( f : (x : Base |- Base) |- (x : Base |- Base) )]]
 -- term2 = return(return( lift(f.lift(x. f with (f with (f with x)) )) ))
-term2 :: Term
+term2 :: Term StdMode
 term2 = Return 1 (Return 2 (
           Lift 1 [(f,btb)] (Lift 0 [(x,b)] (
             Unlift 1 vf [Unlift 1 vf [Unlift 1 vf [vx]]]
@@ -39,7 +39,7 @@ term2 = Return 1 (Return 2 (
 
 -- term3 :{0} [[( f : (x : Base |- Base), x : (|- Base) |- (|- Base) )]]
 -- term3 = return(return( lift(f,x.lift(. f with (f with (f with (x with ()))) )) ))
-term3 :: Term
+term3 :: Term StdMode
 term3 = Return 1 (Return 2 (
           Lift 1 ([] @> (f,btb) @> (x,b')) (Lift 0 [] (
             Unlift 1 vf [Unlift 1 vf [Unlift 1 vf [Unlift 1 vx []]]]
@@ -59,7 +59,7 @@ term3 = Return 1 (Return 2 (
 --           let return v = u in return(
 --             lift(f. v with (v with f) )
 --         ))
-term4 :: Term
+term4 :: Term StdMode
 term4 = LetReturn 1 u term2 (Return 1 (
           LetReturn 2 v vu (Return 2 (
             Lift 1 [(f,btb)] (
@@ -82,7 +82,7 @@ term4 = LetReturn 1 u term2 (Return 1 (
 -- term5 = let return u = return(fn x -> x) in
 --         let return v = return(lift(x.x)) in
 --         return(lift(x. (u v) with x ))
-term5 :: Term
+term5 :: Term StdMode
 term5 = LetReturn 1 u (Return 1 (Lam x btb (Var x))) (
         LetReturn 1 v (Return 1 (Lift 0 [(x,b)] vx)) (
           Return 1 (Lift 0 [(x,b)] (Unlift 1 (App vu vv) [vx]))
@@ -102,7 +102,7 @@ term5 = LetReturn 1 u (Return 1 (Lam x btb (Var x))) (
 --         fn z ->
 --         let return v = z in
 --         fn x -> (v with ()) (u with x)
-term6 :: Term
+term6 :: Term StdMode
 term6 = LetReturn 1 u (Return 1 (Lift 0 [(x,b)] vx)) (
         Lam z btb' (
         LetReturn 1 v vz (

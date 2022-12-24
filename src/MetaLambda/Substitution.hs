@@ -18,7 +18,7 @@ singleton (Id x i) y
   | x == y    = Just (Max i)
   | otherwise = Nothing
 
-fromTerm :: Mode -> Term -> Mode -> AllocId
+fromTerm :: Mode mo => mo -> Term mo -> mo -> AllocId
 -- m <= n
 fromTerm m (Var y)                n | m == n    = singleton y
                                     | otherwise = mempty
@@ -32,14 +32,14 @@ fromTerm m (Return m' t)          n | m == n    = mempty
 fromTerm m (LetReturn m' u t1 t2) n          = fromTerm m t1 n <> fromTerm m t2 n
 
 -- substitutions
-subst :: Mode -> (Id, Term) -> Mode -> Term -> Term
+subst :: Mode mo => mo -> (Id, Term mo) -> mo -> Term mo -> Term mo
 subst m xt = ssubst m [xt]
 
-ssubst :: Mode -> [(Id, Term)] -> Mode -> Term -> Term
+ssubst :: Mode mo => mo -> [(Id, Term mo)] -> mo -> Term mo -> Term mo
 ssubst = \m s n t -> go m (Map.fromList s) n t
   where
     -- m >= n
-    go :: Mode -> Map Id Term -> Mode -> Term -> Term
+    go :: Mode mo => mo -> Map Id (Term mo) -> mo -> Term mo -> Term mo
     go m s n t@(Var x)              | m == n    = Map.findWithDefault t x s
                                     | otherwise = t
     go m s n (Lam x a t)            | m == n    = Lam x' a (go m s' n t)
