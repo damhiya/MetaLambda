@@ -9,8 +9,10 @@ data Id = Id !String !Natural deriving (Show, Eq, Ord)
 type Mode = Natural
 
 data Type where
-  Upshift :: Ctx -> Type -> Type
-  Downshift :: Type -> Type
+  -- Upshift m Γ A = (Γ ⊢ₘ A)
+  Upshift :: Mode -> Ctx -> Type -> Type
+  -- Downshift m A = ↓ᵐ A
+  Downshift :: Mode -> Type -> Type
   Arr :: Type -> Type -> Type
   Base :: Type
   deriving (Eq, Show)
@@ -22,10 +24,10 @@ data Term
   = Var Id
   | Lam Id Type Term
   | App Term Term
-  | Lift Ctx Term
-  | Unlift Term Subst
-  | Return Term
-  | LetReturn Id Term Term
+  | Lift Mode Ctx Term
+  | Unlift Mode Term Subst
+  | Return Mode Term
+  | LetReturn Mode Id Term Term
   deriving Show
 
 type Subst = [Term]

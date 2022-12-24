@@ -20,16 +20,16 @@ singleton (Id x i) y
 
 fromTerm :: Mode -> Term -> Mode -> AllocId
 -- m <= n
-fromTerm m (Var y)             n | m == n    = singleton y
-                                 | otherwise = mempty
-fromTerm m (Lam y a t)         n             = fromTerm m t n
-fromTerm m (App t1 t2)         n             = fromTerm m t1 n <> fromTerm m t2 n
-fromTerm m (Lift ctx t)        n             = fromTerm (m-1) t n
-fromTerm m (Unlift t s)        n | m == n    = foldMap (\t -> fromTerm m t n) s
-                                 | otherwise = foldMap (\t -> fromTerm m t n) s <> fromTerm (m+1) t n
-fromTerm m (Return t)          n | m == n    = mempty
-                                 | otherwise = fromTerm (m+1) t n
-fromTerm m (LetReturn u t1 t2) n             = fromTerm m t1 n <> fromTerm m t2 n
+fromTerm m (Var y)                n | m == n    = singleton y
+                                    | otherwise = mempty
+fromTerm m (Lam y a t)            n             = fromTerm m t n
+fromTerm m (App t1 t2)            n             = fromTerm m t1 n <> fromTerm m t2 n
+fromTerm m (Lift m' ctx t)        n             = fromTerm m' t n
+fromTerm m (Unlift m' t s)        n | m == n    = foldMap (\t -> fromTerm m t n) s
+                                    | otherwise = foldMap (\t -> fromTerm m t n) s <> fromTerm m' t n
+fromTerm m (Return m' t)          n | m == n    = mempty
+                                    | otherwise = fromTerm m' t n
+fromTerm m (LetReturn m' u t1 t2) n          = fromTerm m t1 n <> fromTerm m t2 n
 
 -- substitutions
 subst :: Mode -> (Id, Term) -> Mode -> Term -> Term
@@ -40,21 +40,21 @@ ssubst = \m s n t -> go m (Map.fromList s) n t
   where
     -- m >= n
     go :: Mode -> Map Id Term -> Mode -> Term -> Term
-    go m s n t@(Var x)           | m == n    = Map.findWithDefault t x s
-                                 | otherwise = t
-    go m s n (Lam x a t)         | m == n    = Lam x' a (go m s' n t)
-                                 | otherwise = Lam x  a (go m s  n t)
+    go m s n t@(Var x)              | m == n    = Map.findWithDefault t x s
+                                    | otherwise = t
+    go m s n (Lam x a t)            | m == n    = Lam x' a (go m s' n t)
+                                    | otherwise = Lam x  a (go m s  n t)
       where
         x' = newId (foldMap (\t -> fromTerm m t m) s) x
         s' = Map.insert x (Var x') s
-    go m s n (App t1 t2)                     = App (go m s n t1) (go m s n t2)
-    go m s n (Lift ctx t)                    = Lift ctx (go m s (n-1) t)
-    go m s n (Unlift t s')       | m == n    = Unlift t                (go m s n <$> s')
-                                 | otherwise = Unlift (go m s (n+1) t) (go m s n <$> s')
-    go m s n tt@(Return t)       | m == n    = tt
-                                 | otherwise = Return (go m s (n+1) t)
-    go m s n (LetReturn u t1 t2) | m == n+1  = LetReturn u' (go m s n t1) (go m s' n t2)
-                                 | otherwise = LetReturn u  (go m s n t1) (go m s  n t2)
+    go m s n (App t1 t2)                        = App (go m s n t1) (go m s n t2)
+    go m s n (Lift n' ctx t)                    = Lift n' ctx (go m s n' t)
+    go m s n (Unlift n' t s')       | m == n    = Unlift n' t             (go m s n <$> s')
+                                    | otherwise = Unlift n' (go m s n' t) (go m s n <$> s')
+    go m s n tt@(Return n' t)       | m == n    = tt
+                                    | otherwise = Return n' (go m s n' t)
+    go m s n (LetReturn n' u t1 t2) | m == n'   = LetReturn n' u' (go m s n t1) (go m s' n t2)
+                                    | otherwise = LetReturn n' u  (go m s n t1) (go m s  n t2)
       where
         u' = newId (foldMap (\t -> fromTerm m t m) s) u
         s' = Map.insert u (Var u') s
