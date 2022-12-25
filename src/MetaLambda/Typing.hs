@@ -2,10 +2,10 @@ module MetaLambda.Typing where
 
 import           Control.Monad
 import           Control.Monad.Except
-import Data.List.NonEmpty (NonEmpty(..))
-import qualified Data.Map as M
-import Data.Functor.Compose
-import Data.Foldable
+import           Data.Foldable
+import           Data.Functor.Compose
+import           Data.List.NonEmpty   (NonEmpty (..))
+import qualified Data.Map             as M
 
 import           MetaLambda.Syntax
 import           Util
@@ -22,7 +22,7 @@ appendVar :: Ord mo => Ctxs mo -> mo -> (Id, Type mo) -> Ctxs mo
 appendVar ctxs m xa = M.alter (\ctx -> Just (xa :| (toList . Compose) ctx)) m ctxs
 
 appendCtx :: Ord mo => Ctxs mo -> mo -> Ctx mo -> Ctxs mo
-appendCtx ctxs m [] = ctxs
+appendCtx ctxs m []       = ctxs
 appendCtx ctxs m (xa:ctx) = M.insert m (xa :| ctx) ctxs
 
 infixl 5 @>

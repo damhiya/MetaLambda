@@ -1,9 +1,9 @@
 module MetaLambda.Substitution where
 
-import           Data.Map       (Map)
-import qualified Data.Map       as Map
+import           Data.Map          (Map)
+import qualified Data.Map          as Map
 import           Data.Semigroup
-import Numeric.Natural
+import           Numeric.Natural
 
 import           MetaLambda.Syntax
 

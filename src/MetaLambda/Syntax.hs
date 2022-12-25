@@ -1,8 +1,8 @@
 module MetaLambda.Syntax where
 
-import Numeric.Natural
-import Data.Map
-import Data.List.NonEmpty
+import           Data.List.NonEmpty
+import           Data.Map
+import           Numeric.Natural
 
 -- identifier
 data Id = Id !String !Natural deriving (Show, Eq, Ord)
@@ -15,14 +15,14 @@ class Eq mo => Mode mo where
   hasArr :: mo -> Bool
   hasBase :: mo -> Bool
 
+type StdMode = Natural
+
 instance Mode StdMode where
   globalCtxOf m n = m <= n
   hasUpshift m n = m+1 == n
   hasDownshift m n = m+1 == n
   hasArr m = True
   hasBase m = True
-
-type StdMode = Natural
 
 data Type mo where
   -- Upshift m Γ A = (Γ ⊢ₘ A)

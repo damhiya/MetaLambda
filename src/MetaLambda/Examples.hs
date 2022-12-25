@@ -1,8 +1,8 @@
 module MetaLambda.Examples where
 
-import MetaLambda.Syntax
-import MetaLambda.Typing
-import MetaLambda.Evaluation
+import           MetaLambda.Evaluation
+import           MetaLambda.Syntax
+import           MetaLambda.Typing
 
 inferType' :: StdMode -> Ctxs StdMode -> Term StdMode -> Either TypeError (Type StdMode)
 inferType' = inferType
