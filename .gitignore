@@ -1,3 +1,9 @@
 .direnv
 dist-newstyle
 result
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.pdf
+*.xdv

@@ -34,6 +34,10 @@
                   version = "0.35.0";
                 };
               };
+              shell.buildInputs = with pkgs; [
+                gnumake
+                texlive.combined.scheme-full
+              ];
             };
           })
         ];
