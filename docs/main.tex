@@ -1,18 +1,31 @@
 \documentclass[12pt]{article}
 
 \usepackage[a4paper, total={6in,8in}]{geometry}
+\usepackage{proof}
 
 \newcommand{\MetaLambda}[0]{MetaLambda }
 
-\newcommand{\Modes}[0]{\textrm{Modes}}
-\newcommand{\Types}[0]{\textrm{Types}}
-\newcommand{\Ctxs}[0]{\textrm{Contexts}}
-\newcommand{\Terms}[0]{\textrm{Terms}}
+\newcommand{\pow}[0]{\mathcal{P}}
+
+\newcommand{\Mode}[0]{\textrm{Mode}}
+\newcommand{\Type}[0]{\textrm{Type}}
+\newcommand{\Ctx}[0]{\textrm{Ctx}}
+\newcommand{\Ctxs}[0]{\textrm{Ctxs}}
+\newcommand{\Term}[0]{\textrm{Term}}
 
 \newcommand{\upshift}[4]{(#3 \vdash_{#1}^{#2} #4)}
 \newcommand{\downshift}[3]{\ \downarrow_{#1}^{#2} #3}
 \newcommand{\arrow}[3]{#2 \to_{#1} #3}
 \newcommand{\base}[1]{\textbf{base}_{#1}}
+
+\newcommand{\lift}[2]{\texttt{lift}(#1 . #2)}
+\newcommand{\unlift}[2]{#1 \texttt{ with}(#2)}
+\newcommand{\return}[1]{\texttt{return } #1}
+\newcommand{\letreturn}[3]{\texttt{let return } #1 = #2 \texttt{ in } #3}
+
+\newcommand{\type}[2]{\vdash_{#1} #2 \ \textrm{type}}
+\newcommand{\ctx}[2]{\vdash_{#1} #2 \ \textrm{ctx}}
+\newcommand{\ctxs}[2]{\vdash_{#1} #2 \ \textrm{ctxs}}
 
 \title{\MetaLambda}
 \author{SoonWon Moon}
@@ -24,15 +37,63 @@
 
 \section{Syntax}
 \[
-  \begin{array}{llcl}
-    \Modes & a, b & \\
-    \Types & A, B & ::= & \upshift{a}{b}{\Psi}{A}
-                     \mid \downshift{a}{b}{A}
-                     \mid \arrow{a}{A}{B}
-                     \mid \base{a}
-                     \\
-    \Ctxs & \Gamma, \Psi & ::= & \cdot \mid \Gamma, x : A \\
+  \begin{array}{lrcl}
+          & a, b & \in & \Mode \\
+          & s    & \in & \pow(\Mode) \\
+    \Type & A, B & ::= & \upshift{a}{b}{\Psi}{A}
+                    \mid \downshift{a}{b}{A}
+                    \mid \arrow{a}{A}{B}
+                    \mid \base{a}
+                    \mid \ldots
+                    \\
+    \Ctx  & \Gamma & ::= & \cdot \mid \Gamma, x : A \\
+    \Ctxs & \Delta, \Psi & \in & \{ \Delta : \Mode \to \Ctx
+                               \mid \Delta(a) \neq \cdot \textrm{ only for finite number of \(a\)} \} \\
+    \Term & e & ::= & \lift{\Psi}{e}
+                 \mid \unlift{e}{\sigma}
+                 \mid \return{e}
+                 \mid \letreturn{x}{e_1}{e_2}
+                 \mid \lambda x. e
+                 \mid e_1 \ e_2
+                 \mid \ldots
   \end{array}
 \]
+
+\[ \delta : \Mode \to \pow(\Mode) \]
+
+\section{Typing}
+
+\begin{tabular}{cccc}
+  \infer{ \type{b}{\upshift{a}{b}{\Psi}{A}} }{
+    \ctxs{\delta(a) \setminus \delta(b)}{\Psi} &
+    \type{a}{A}
+  }
+  &
+  \infer{ \type{a}{\downshift{a}{b}{A}} }{
+    \type{b}{A}
+  }
+  &
+  \infer{ \type{a}{\arrow{a}{A}{B}} }{
+    \type{a}{A} & 
+    \type{a}{B}
+  }
+  &
+  \infer{ \type{a}{\base{a}} }{
+  }
+\end{tabular}\\[1em]
+
+\begin{tabular}{ccc}
+  \infer{ \ctx{a}{\cdot} }{}
+  &
+  \infer{ \ctx{a}{\Gamma, x : A} }{
+    \ctx{a}{\Gamma} &
+    \type{a}{A}
+  }
+  &
+  \infer{ \ctxs{s}{\Delta} }{
+    \ctx{a}{\Delta(a)} \textrm{ for every } a \in s &
+    \Delta(a) = \cdot \textrm{ if } a \notin s
+  }
+\end{tabular}
 
 \end{document}
