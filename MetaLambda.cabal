@@ -59,6 +59,7 @@ library MetaLambdaLib
 
 library Util
   exposed-modules:
+      Data.MapList
       Util
   other-modules:
       Paths_MetaLambda
@@ -72,6 +73,7 @@ library Util
   ghc-options: -Wall -Wno-unused-matches
   build-depends:
       base >=4.14 && <5.0
+    , containers
     , mtl
     , text ==2.0
   default-language: GHC2021

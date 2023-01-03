@@ -2,10 +2,8 @@ module MetaLambda.Typing where
 
 import           Control.Monad
 import           Control.Monad.Except
-import           Data.Foldable
-import           Data.Functor.Compose
-import           Data.List.NonEmpty   (NonEmpty (..))
 import qualified Data.Map             as M
+import qualified Data.MapList         as ML
 
 import           MetaLambda.Syntax
 import           Util
@@ -19,18 +17,17 @@ data TypeError
 
 -- Context operations
 appendVar :: Ord mo => Ctxs mo -> mo -> (Id, Type mo) -> Ctxs mo
-appendVar ctxs m xa = M.alter (\ctx -> Just (xa :| (toList . Compose) ctx)) m ctxs
+appendVar ctxs m xa = ML.consAt m xa ctxs
 
 appendCtx :: Ord mo => Ctxs mo -> mo -> Ctx mo -> Ctxs mo
-appendCtx ctxs m []       = ctxs
-appendCtx ctxs m (xa:ctx) = M.insert m (xa :| ctx) ctxs
+appendCtx ctxs m ctx = ML.insert m ctx ctxs
 
 infixl 5 @>
 (@>) :: Ctx mo -> (Id, Type mo) -> Ctx mo
 (@>) = flip (:)
 
 localCtx :: Ord mo => Ctxs mo -> mo -> Ctx mo
-localCtx ctxs m = (toList . Compose . M.lookup m) ctxs
+localCtx ctxs m = ML.lookup m ctxs
 
 globalCtx :: (Mode mo, Ord mo) => Ctxs mo -> mo -> Ctxs mo
 globalCtx ctxs m = M.filterWithKey (\n _ -> globalCtxOf m n) ctxs

@@ -26,6 +26,7 @@ internal-libraries:
   Util:
     source-dirs: util
     dependencies:
+      - containers
       - mtl
 
   MetaLambdaLib:

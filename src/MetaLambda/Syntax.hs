@@ -1,7 +1,6 @@
 module MetaLambda.Syntax where
 
-import           Data.List.NonEmpty
-import           Data.Map
+import           Data.MapList
 import           Numeric.Natural
 
 -- identifier
@@ -34,7 +33,7 @@ data Type mo where
   deriving (Eq, Show)
 
 type Ctx mo = [(Id, Type mo)]
-type Ctxs mo = Map mo (NonEmpty (Id, Type mo))
+type Ctxs mo = MapList mo (Id, Type mo)
 
 -- term and substitution
 data Term mo
