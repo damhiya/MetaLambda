@@ -24,8 +24,8 @@ instance Mode StdMode where
   hasBase m = True
 
 data Type mo where
-  -- Upshift m Γ A = (Γ ⊢ₘ A)
-  Upshift :: mo -> Ctx mo -> Type mo -> Type mo
+  -- Upshift m Ψ A = (Ψ ⊢ₘ A)
+  Upshift :: mo -> Ctxs mo -> Type mo -> Type mo
   -- Downshift m A = ↓ᵐ A
   Downshift :: mo -> Type mo -> Type mo
   Arr :: Type mo -> Type mo -> Type mo
@@ -40,10 +40,11 @@ data Term mo
   = Var Id
   | Lam Id (Type mo) (Term mo)
   | App (Term mo) (Term mo)
-  | Lift mo (Ctx mo) (Term mo)
-  | Unlift mo (Term mo) (Subst mo)
+  | Lift mo (Ctxs mo) (Term mo)
+  | Unlift mo (Term mo) (Substs mo)
   | Return mo (Term mo)
   | LetReturn mo Id (Term mo) (Term mo)
   deriving Show
 
 type Subst mo = [Term mo]
+type Substs mo = MapList mo (Term mo)
