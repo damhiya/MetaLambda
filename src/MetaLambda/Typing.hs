@@ -22,6 +22,9 @@ appendVar ctxs m xa = ML.consAt m xa ctxs
 appendCtx :: Ord mo => Ctxs mo -> mo -> Ctx mo -> Ctxs mo
 appendCtx ctxs m ctx = ML.insert m ctx ctxs
 
+appendCtxs :: Ord mo => Ctxs mo -> Ctxs mo -> Ctxs mo
+appendCtxs = M.union
+
 infixl 5 @>
 (@>) :: Ctx mo -> (Id, Type mo) -> Ctx mo
 (@>) = flip (:)
@@ -48,19 +51,21 @@ inferType m ctxs (App t1 t2) = do
       guardWith GuardError (a == a')
       pure b
     _ -> throwError MatchError
-inferType m ctxs (Lift n ctx t) = do
+inferType m ctxs (Lift n lctx t) = do
   guardWith GuardError (hasUpshift n m)
-  a <- inferType n (appendCtx ctxs n ctx) t
-  pure (Upshift n ctx a)
+  guardWith GuardError (ML.allKeys (\k -> dependencyOf n k && not (dependencyOf m k)) lctx)
+  a <- inferType n (appendCtxs ctxs lctx) t
+  pure (Upshift n lctx a)
 inferType m ctxs (Unlift n t s) = do
   guardWith GuardError (hasUpshift m n)
   inferType n (restrictCtx ctxs n) t >>= \case
-    Upshift m' ctx a -> do
-      guardWith GuardError (m == m')
-      forM_ (zip (map snd ctx) s) $ \(a, t) -> do
-        a' <- inferType m ctxs t
-        guardWith GuardError (a == a')
-      pure a
+    Upshift m' lctx a -> do
+      undefined
+      -- guardWith GuardError (m == m')
+      -- forM_ (zip (map snd ctx) s) $ \(a, t) -> do
+      --   a' <- inferType m ctxs t
+      --   guardWith GuardError (a == a')
+      -- pure a
     _ -> throwError MatchError
 inferType m ctxs (Return n t) = do
   guardWith GuardError (hasDownshift m n)
