@@ -8,7 +8,7 @@ data Id = Id !String !Natural deriving (Show, Eq, Ord)
 
 -- mode, type and context
 class Eq mo => Mode mo where
-  globalCtxOf :: mo -> mo -> Bool
+  dependencyOf :: mo -> mo -> Bool
   hasUpshift :: mo -> mo -> Bool
   hasDownshift :: mo -> mo -> Bool
   hasArr :: mo -> Bool
@@ -17,7 +17,7 @@ class Eq mo => Mode mo where
 type StdMode = Natural
 
 instance Mode StdMode where
-  globalCtxOf m n = m <= n
+  dependencyOf m n = m <= n
   hasUpshift m n = m+1 == n
   hasDownshift m n = m+1 == n
   hasArr m = True

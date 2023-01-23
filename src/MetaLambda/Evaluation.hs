@@ -16,12 +16,12 @@ splice = \m t -> go m m t
       Lam x a t1                 -> Lam x a (go m n t1)
       App t1 t2                  -> App (go m n t1) (go m n t2)
       Lift n' ctx t1             -> Lift n' ctx (go m n' t1)
-      Unlift n' t1 s | globalCtxOf m n' && m /= n'
+      Unlift n' t1 s | dependencyOf m n' && m /= n'
                                  -> case evaluate n' t1 of
                                       Lift _ ctx t1' -> ssubst m ((go m n <$> s) // ctx) n t1'
                                       t1'            -> Unlift n' t1' (go m n <$> s)
                      | otherwise -> Unlift n' (go m n' t1) (go m n <$> s)
-      Return n' t1   | globalCtxOf m n' && m /= n'
+      Return n' t1   | dependencyOf m n' && m /= n'
                                  -> Return n' (evaluate n' t1)
                      | otherwise -> Return n' (go m n' t1)
       LetReturn n' u t1 t2       -> LetReturn n' u (go m n t1) (go m n t2)

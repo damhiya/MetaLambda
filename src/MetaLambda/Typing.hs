@@ -29,8 +29,8 @@ infixl 5 @>
 localCtx :: Ord mo => Ctxs mo -> mo -> Ctx mo
 localCtx ctxs m = ML.lookup m ctxs
 
-globalCtx :: (Mode mo, Ord mo) => Ctxs mo -> mo -> Ctxs mo
-globalCtx ctxs m = M.filterWithKey (\n _ -> globalCtxOf m n) ctxs
+restrictCtx :: (Mode mo, Ord mo) => Ctxs mo -> mo -> Ctxs mo
+restrictCtx ctxs m = M.filterWithKey (\n _ -> dependencyOf m n) ctxs
 
 lookupId :: Ctx mo -> Id -> Maybe (Type mo)
 lookupId ctx x = lookup x ctx
@@ -54,7 +54,7 @@ inferType m ctxs (Lift n ctx t) = do
   pure (Upshift n ctx a)
 inferType m ctxs (Unlift n t s) = do
   guardWith GuardError (hasUpshift m n)
-  inferType n (globalCtx ctxs n) t >>= \case
+  inferType n (restrictCtx ctxs n) t >>= \case
     Upshift m' ctx a -> do
       guardWith GuardError (m == m')
       forM_ (zip (map snd ctx) s) $ \(a, t) -> do
@@ -64,7 +64,7 @@ inferType m ctxs (Unlift n t s) = do
     _ -> throwError MatchError
 inferType m ctxs (Return n t) = do
   guardWith GuardError (hasDownshift m n)
-  a <- inferType n (globalCtx ctxs n) t
+  a <- inferType n (restrictCtx ctxs n) t
   pure (Downshift n a)
 inferType m ctxs (LetReturn n u t1 t2) = do
   guardWith GuardError (hasDownshift m n)
