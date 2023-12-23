@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.35.0.
+-- This file has been generated from package.yaml by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 
@@ -46,14 +46,14 @@ library MetaLambdaLib
       LambdaCase
   ghc-options: -Wall -Wno-unused-matches
   build-depends:
-      Earley
+      Earley ==0.13.*
     , Util
-    , base >=4.14 && <5.0
-    , containers
-    , megaparsec
-    , mtl
-    , prettyprinter
-    , text ==2.0
+    , base ==4.18.*
+    , containers ==0.6.*
+    , megaparsec ==9.6.*
+    , mtl ==2.3.*
+    , prettyprinter ==1.7.*
+    , text ==2.0.*
   default-language: GHC2021
 
 library Util
@@ -70,9 +70,9 @@ library Util
       LambdaCase
   ghc-options: -Wall -Wno-unused-matches
   build-depends:
-      base >=4.14 && <5.0
-    , mtl
-    , text ==2.0
+      base ==4.18.*
+    , mtl ==2.3.*
+    , text ==2.0.*
   default-language: GHC2021
 
 executable MetaLambda
@@ -90,11 +90,11 @@ executable MetaLambda
   build-depends:
       MetaLambdaLib
     , Util
-    , base >=4.14 && <5.0
-    , haskeline
-    , megaparsec
-    , mtl
-    , text ==2.0
+    , base ==4.18.*
+    , haskeline ==0.8.*
+    , megaparsec ==9.6.*
+    , mtl ==2.3.*
+    , text ==2.0.*
   default-language: GHC2021
 
 test-suite MetaLambdaTest
@@ -112,9 +112,9 @@ test-suite MetaLambdaTest
   ghc-options: -Wall -Wno-unused-matches
   build-depends:
       MetaLambdaLib
-    , base >=4.14 && <5.0
-    , directory
-    , tasty
-    , tasty-golden
-    , text ==2.0
+    , base ==4.18.*
+    , directory ==1.3.*
+    , tasty ==1.5.*
+    , tasty-golden ==2.3.*
+    , text ==2.0.*
   default-language: GHC2021

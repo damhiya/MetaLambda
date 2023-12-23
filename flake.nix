@@ -1,8 +1,14 @@
 {
   description = "MetaLambda - contextual modal type theory";
 
+  nixConfig = {
+    extra-substituters = [ "https://cache.iog.io" ];
+    extra-trusted-public-keys =
+      [ "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" ];
+  };
+
   inputs = {
-    haskellNix.url = "github:input-output-hk/haskell.nix";
+    haskellNix.url = "github:input-output-hk/haskell.nix/84a8f0e7b2060f647942b60f576692df0caa63b2";
     nixpkgs.follows = "haskellNix/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
@@ -10,27 +16,16 @@
   outputs = { self, nixpkgs, flake-utils, haskellNix, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        index-state = "2022-11-02T00:00:00Z";
         overlays = [
           haskellNix.overlay
           (final: prev: {
             MetaLambda = final.haskell-nix.cabalProject' {
-              inherit index-state;
+              # inherit index-state;
               src = ./.;
-              compiler-nix-name = "ghc924";
+              compiler-nix-name = "ghc963";
               shell.tools = {
-                cabal = {
-                  inherit index-state;
-                  version = "3.6.2.0";
-                };
-                haskell-language-server = {
-                  inherit index-state;
-                  version = "1.8.0.0";
-                };
-                hpack = {
-                  inherit index-state;
-                  version = "0.35.0";
-                };
+                cabal = { };
+                haskell-language-server = { };
               };
             };
           })
