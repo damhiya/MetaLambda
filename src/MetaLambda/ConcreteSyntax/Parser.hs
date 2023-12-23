@@ -22,7 +22,7 @@ grammar = mdo
 
   boxt <- E.rule $ brackets $ do
     g <- ctx
-    tok TVDash
+    tok TRTack
     t <- typ1
     pure (BoxT g t)
 

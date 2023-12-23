@@ -21,7 +21,7 @@ token = do
     , P.string ":"  $> TColon
     , P.string "="  $> TEqual
     , P.string "->" $> TArrow
-    , P.string "|-" $> TVDash
+    , P.string "|-" $> TRTack
     , P.string "["  $> TBrkL
     , P.string "]"  $> TBrkR
     , P.string "("  $> TParL

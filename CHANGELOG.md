@@ -1,9 +1,9 @@
 # Revision history for MetaLambda
 
-## Dev
-Implementing following features
+## 0.1
+Simple CMTT implementation with:
 * Type inference
 * Evaluation
 * Parser
 * Pretty printer
-* Simple REPL
+* Basic REPL

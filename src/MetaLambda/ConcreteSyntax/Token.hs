@@ -8,7 +8,7 @@ data Tok
   | TColon
   | TEqual
   | TArrow
-  | TVDash
+  | TRTack
   | TBrkL
   | TBrkR
   | TParL
