@@ -20,12 +20,13 @@
           haskellNix.overlay
           (final: prev: {
             MetaLambda = final.haskell-nix.cabalProject' {
-              # inherit index-state;
               src = ./.;
               compiler-nix-name = "ghc963";
               shell.tools = {
                 cabal = { };
                 haskell-language-server = { };
+                hlint = { };
+                stylish-haskell = { };
               };
             };
           })
