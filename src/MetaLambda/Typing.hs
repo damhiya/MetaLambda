@@ -71,6 +71,10 @@ inferType gctx ctx (ListMatch e enil x xs econs) = do
 inferType gctx ctx (Lam x ta e) = do
   tb <- inferType gctx ((x,ta) : ctx) e
   pure (Arr ta tb)
+inferType gctx ctx (Fix t1 t2 f x e) = do
+  t2' <- inferType gctx ((f,Arr t1 t2) : (x,t1) : ctx) e
+  with GuardError $ guard (t2 == t2')
+  pure (Arr t1 t2)
 inferType gctx ctx (App e1 e2) = do
   inferType gctx ctx e1 >>= \case
     Arr ta tb -> do

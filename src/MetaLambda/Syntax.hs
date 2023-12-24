@@ -47,6 +47,7 @@ data Term
   | ListMatch Term Term Id Id Term
   -- function
   | Lam Id Type Term
+  | Fix Type Type Id Id Term
   | App Term Term
   -- box
   | Box LCtx Term
