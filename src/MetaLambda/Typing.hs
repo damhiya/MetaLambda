@@ -29,6 +29,45 @@ erase = map fst
 
 inferType :: MonadError TypeError m => GCtx -> LCtx -> Term -> m Type
 inferType gctx ctx (Var x) = with LookUpError $ lookupId ctx x
+inferType gctx ctx BTrue = pure Bool
+inferType gctx ctx BFalse = pure Bool
+inferType gctx ctx (BoolMatch e0 e1 e2) = do
+  inferType gctx ctx e0 >>= \case
+    Bool -> do
+      t1 <- inferType gctx ctx e1
+      t2 <- inferType gctx ctx e2
+      with GuardError $ guard (t1 == t2)
+      pure t1
+    _ -> throwError MatchError
+inferType gctx ctx (IntLit n) = pure Int
+inferType gctx ctx (Pair e1 e2) = do
+  t1 <- inferType gctx ctx e1
+  t2 <- inferType gctx ctx e2
+  pure (Prod t1 t2)
+inferType gctx ctx (ProdMatch e1 x y e2) = do
+  inferType gctx ctx e1 >>= \case
+    Prod tx ty -> do
+      t <- inferType gctx ((x,tx) : (y,ty) : ctx) e2
+      pure t
+    _ -> throwError MatchError
+inferType gctx ctx (Nil t) = do
+  pure (List t)
+inferType gctx ctx (Cons e1 e2) = do
+  t1 <- inferType gctx ctx e1
+  t2 <- inferType gctx ctx e2
+  case t2 of
+    List t -> do
+      with GuardError $ guard (t1 == t)
+      pure t2
+    _ -> throwError MatchError
+inferType gctx ctx (ListMatch e enil x xs econs) = do
+  inferType gctx ctx e >>= \case
+    List t -> do
+      t1 <- inferType gctx ctx enil
+      t2 <- inferType gctx ((x,t) : (xs,List t) : ctx) econs
+      with GuardError $ guard (t1 == t2)
+      pure t1
+    _ -> throwError MatchError
 inferType gctx ctx (Lam x ta e) = do
   tb <- inferType gctx ((x,ta) : ctx) e
   pure (Arr ta tb)
@@ -56,3 +95,28 @@ inferType gctx ctx (Clo u es) = do
     t' <- inferType gctx ctx e
     with GuardError $ guard (t == t')
   pure ot
+inferType gctx ctx (PrimOp op) = go op
+  where
+    go (IntEq e1 e2)  = comparator e1 e2
+    go (IntLe e1 e2)  = comparator e1 e2
+    go (IntAdd e1 e2) = binoperator e1 e2
+    go (IntSub e1 e2) = binoperator e1 e2
+    go (IntMul e1 e2) = binoperator e1 e2
+    go (IntDiv e1 e2) = binoperator e1 e2
+    go (IntMod e1 e2) = binoperator e1 e2
+    go (IntPow e1 e2) = binoperator e1 e2
+    go (Inject e)     = inject e
+    comparator e1 e2 = do
+      t1 <- inferType gctx ctx e1
+      t2 <- inferType gctx ctx e2
+      with GuardError $ guard (t1 == Int && t2 == Int)
+      pure Bool
+    binoperator e1 e2 = do
+      t1 <- inferType gctx ctx e1
+      t2 <- inferType gctx ctx e2
+      with GuardError $ guard (t1 == Int && t2 == Int)
+      pure Int
+    inject e = do
+      inferType gctx ctx e >>= \case
+        Int -> pure (BoxT [] Int)
+        _ -> throwError MatchError
