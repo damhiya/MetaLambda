@@ -47,6 +47,9 @@ eval (LetBox oectx u e1 e2) =
     VBox octx oe -> eval (substGlobal (u, oectx, oe) e2)
     _           -> invalid
 eval (Clo _ _) = invalid
+eval (Let x e1 e2) =
+  let v = eval e1
+   in eval (substv (x,v) e2)
 eval (PrimOp op) = go op
   where
     go (IntEq e1 e2)  = binop (\m n -> if m == n then VTrue else VFalse) e1 e2

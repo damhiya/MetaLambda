@@ -99,6 +99,9 @@ inferType gctx ctx (Clo u es) = do
     t' <- inferType gctx ctx e
     with GuardError $ guard (t == t')
   pure ot
+inferType gctx ctx (Let x e1 e2) = do
+  t <- inferType gctx ctx e1
+  inferType gctx ((x,t) : ctx) e2
 inferType gctx ctx (PrimOp op) = go op
   where
     go (IntEq e1 e2)  = comparator e1 e2

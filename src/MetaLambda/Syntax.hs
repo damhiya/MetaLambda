@@ -54,6 +54,7 @@ data Term
   | LetBox LECtx GId Term Term
   -- others
   | Clo GId [Term]
+  | Let Id Term Term
   | PrimOp (PrimOp Term)
   deriving Show
 

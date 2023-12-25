@@ -68,6 +68,14 @@ prettyTerm p (LetBox ectx u e1 e2) =
                   , prettyTerm 1 e2
                   ]
 prettyTerm p (Clo u es) = wrap p 1 $ hsep [prettyGId u, "with", tupled (map (prettyTerm 1) es)]
+prettyTerm p (Let x e1 e2) =
+  wrap p 1 $ hsep [ "let"
+                  , prettyId x
+                  , "="
+                  , prettyTerm 1 e1
+                  , "in"
+                  , prettyTerm 1 e2
+                  ]
 prettyTerm p (PrimOp op) = go op
   where
     go (IntEq e1 e2)  = wrap p 4 $ hsep [ prettyTerm 5 e1, "==", prettyTerm 5 e2 ]

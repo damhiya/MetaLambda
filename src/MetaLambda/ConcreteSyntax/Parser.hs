@@ -212,6 +212,15 @@ grammar = mdo
     es <- parens $ sepBy' (tok TComma) term1
     pure (Clo u es)
 
+  letin <- E.rule $ do
+    tok TLet
+    x <- ident
+    tok TEqual
+    e1 <- term1
+    tok TIn
+    e2 <- term1
+    pure (Let x e1 e2)
+
   intEq <- E.rule $ do
     e1 <- term5
     tok TEq
@@ -275,7 +284,7 @@ grammar = mdo
   term5  <- E.rule $ term6 <|> cons
   term4  <- E.rule $ term5 <|> intEq <|> intLe
   let term2 = term4
-  term1  <- E.rule $ term2 <|> lam <|> fix <|> letbox
+  term1  <- E.rule $ term2 <|> lam <|> fix <|> letbox <|> letin
 
   pure term1
   where

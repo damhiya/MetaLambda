@@ -19,30 +19,52 @@ singleton (Id x i) y
 
 fromTerm :: Term -> AllocId
 fromTerm (Var x)            = singleton x
+fromTerm BTrue              = mempty
+fromTerm BFalse             = mempty
+fromTerm (BoolMatch e0 e1 e2) = fromTerm e0 <> fromTerm e1 <> fromTerm e2
+fromTerm (IntLit n)         = mempty
+fromTerm (Pair e1 e2)       = fromTerm e1 <> fromTerm e2
+fromTerm (ProdMatch e0 _ _ e1) = fromTerm e0 <> fromTerm e1
+fromTerm (Nil _)            = mempty
+fromTerm (Cons e1 e2)       = fromTerm e1 <> fromTerm e2
+fromTerm (ListMatch e0 e1 _ _ e2) = fromTerm e0 <> fromTerm e1 <> fromTerm e2
 fromTerm (Lam _ _ e)        = fromTerm e
+fromTerm (Fix _ _ _ _ e)    = fromTerm e
 fromTerm (App e1 e2)        = fromTerm e1 <> fromTerm e2
 fromTerm (Box _ _)          = mempty
 fromTerm (LetBox _ _ e1 e2) = fromTerm e1 <> fromTerm e2
 fromTerm (Clo _ es)         = mconcat (map fromTerm es)
+fromTerm (Let _ e1 e2)      = fromTerm e1 <> fromTerm e2
+fromTerm (PrimOp op)        = go op
+  where
+    go (IntEq e1 e2) = fromTerm e1 <> fromTerm e2
+    go (IntLe e1 e2) = fromTerm e1 <> fromTerm e2
+    go (IntAdd e1 e2) = fromTerm e1 <> fromTerm e2
+    go (IntSub e1 e2) = fromTerm e1 <> fromTerm e2
+    go (IntMul e1 e2) = fromTerm e1 <> fromTerm e2
+    go (IntDiv e1 e2) = fromTerm e1 <> fromTerm e2
+    go (IntMod e1 e2) = fromTerm e1 <> fromTerm e2
+    go (IntPow e1 e2) = fromTerm e1 <> fromTerm e2
+    go (Inject e) = fromTerm e
 
 -- substitutions
 -- renameVar :: (Id, Id) -> Term -> Term
 -- renameVar (x, y) = subst (x, Var y)
 
-renameGVar :: (GId, GId) -> Term -> Term
-renameGVar s e@(Var _) = e
-renameGVar s (Lam x t e) = Lam x t (renameGVar s e)
-renameGVar s (App e1 e2) = App (renameGVar s e1) (renameGVar s e2)
-renameGVar s (Box octx e) = Box octx (renameGVar s e)
-renameGVar s@(u, v) e@(LetBox oectx w e1 e2)
-  | w == u    = e
-  | otherwise = LetBox oectx w (renameGVar s e1) (renameGVar s e2)
-renameGVar s@(u, v) (Clo w es)
-  | w == u    = Clo v (renameGVar s <$> es)
-  | otherwise = Clo w (renameGVar s <$> es)
+-- renameGVar :: (GId, GId) -> Term -> Term
+-- renameGVar s e@(Var _) = e
+-- renameGVar s (Lam x t e) = Lam x t (renameGVar s e)
+-- renameGVar s (App e1 e2) = App (renameGVar s e1) (renameGVar s e2)
+-- renameGVar s (Box octx e) = Box octx (renameGVar s e)
+-- renameGVar s@(u, v) e@(LetBox oectx w e1 e2)
+--   | w == u    = e
+--   | otherwise = LetBox oectx w (renameGVar s e1) (renameGVar s e2)
+-- renameGVar s@(u, v) (Clo w es)
+--   | w == u    = Clo v (renameGVar s <$> es)
+--   | otherwise = Clo w (renameGVar s <$> es)
 
 substv :: (Id, Value) -> Term -> Term
-substv (x, v) t = go t
+substv (x, v) = go
   where
     ev = liftToTerm v
     go = \case
@@ -66,6 +88,8 @@ substv (x, v) t = go t
       Box octx e -> Box octx e
       LetBox oectx u e1 e2 -> LetBox oectx u (go e1) (go e2)
       Clo u es -> Clo u (go <$> es)
+      Let y e1 e2 | y == x    -> Let y (go e1) e2
+                  | otherwise -> Let y (go e1) (go e2)
       PrimOp op -> PrimOp (go <$> op)
 
 -- subst :: (Id, Term) -> Term -> Term
@@ -104,6 +128,7 @@ substGlobal s@(u,oectx,oe) e@(Clo v es)
   | v == u    = let es' = map (substGlobal s) es
                 in substSim (Map.fromList $ zip oectx es') oe
   | otherwise = e
+substGlobal s (Let x e1 e2) = Let x (substGlobal s e1) (substGlobal s e2)
 substGlobal s (PrimOp op) = PrimOp (substGlobal s <$> op)
 
 substSim :: Map Id Term -> Term -> Term
@@ -144,4 +169,8 @@ substSim s (App e1 e2) = App (substSim s e1) (substSim s e2)
 substSim s e@(Box _ _) = e
 substSim s (LetBox oectx u e1 e2) = LetBox oectx u (substSim s e1) (substSim s e2)
 substSim s (Clo u es) = Clo u (substSim s <$> es)
+substSim s (Let x e1 e2) =
+  let x' = newId (foldMap fromTerm s) x
+      s' = Map.union (Map.singleton x (Var x')) s
+   in Let x (substSim s e1) (substSim s' e2)
 substSim s (PrimOp op) = PrimOp (substSim s <$> op)
