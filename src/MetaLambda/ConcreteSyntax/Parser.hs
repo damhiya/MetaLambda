@@ -233,6 +233,12 @@ grammar = mdo
     e2 <- term5
     pure (PrimOp (IntLe e1 e2))
 
+  intLt <- E.rule $ do
+    e1 <- term5
+    tok TLt
+    e2 <- term5
+    pure (PrimOp (IntLt e1 e2))
+
   intAdd <- E.rule $ do
     e1 <- term6
     tok TPlus
@@ -282,7 +288,7 @@ grammar = mdo
   term7  <- E.rule $ term8 <|> intMul <|> intDiv <|> intMod
   term6  <- E.rule $ term7 <|> intAdd <|> intSub
   term5  <- E.rule $ term6 <|> cons
-  term4  <- E.rule $ term5 <|> intEq <|> intLe
+  term4  <- E.rule $ term5 <|> intEq <|> intLe <|> intLt
   let term2 = term4
   term1  <- E.rule $ term2 <|> lam <|> fix <|> letbox <|> letin
 

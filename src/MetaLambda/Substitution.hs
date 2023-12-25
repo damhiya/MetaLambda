@@ -39,6 +39,7 @@ fromTerm (PrimOp op)        = go op
   where
     go (IntEq e1 e2) = fromTerm e1 <> fromTerm e2
     go (IntLe e1 e2) = fromTerm e1 <> fromTerm e2
+    go (IntLt e1 e2) = fromTerm e1 <> fromTerm e2
     go (IntAdd e1 e2) = fromTerm e1 <> fromTerm e2
     go (IntSub e1 e2) = fromTerm e1 <> fromTerm e2
     go (IntMul e1 e2) = fromTerm e1 <> fromTerm e2

@@ -106,6 +106,7 @@ inferType gctx ctx (PrimOp op) = go op
   where
     go (IntEq e1 e2)  = comparator e1 e2
     go (IntLe e1 e2)  = comparator e1 e2
+    go (IntLt e1 e2)  = comparator e1 e2
     go (IntAdd e1 e2) = binoperator e1 e2
     go (IntSub e1 e2) = binoperator e1 e2
     go (IntMul e1 e2) = binoperator e1 e2

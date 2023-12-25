@@ -54,6 +54,7 @@ eval (PrimOp op) = go op
   where
     go (IntEq e1 e2)  = binop (\m n -> if m == n then VTrue else VFalse) e1 e2
     go (IntLe e1 e2)  = binop (\m n -> if m <= n then VTrue else VFalse) e1 e2
+    go (IntLt e1 e2)  = binop (\m n -> if m < n then VTrue else VFalse) e1 e2
     go (IntAdd e1 e2) = binop (\m n -> VInt (m + n)) e1 e2
     go (IntSub e1 e2) = binop (\m n -> VInt (m - n)) e1 e2
     go (IntMul e1 e2) = binop (\m n -> VInt (m * n)) e1 e2

@@ -80,6 +80,7 @@ prettyTerm p (PrimOp op) = go op
   where
     go (IntEq e1 e2)  = wrap p 4 $ hsep [ prettyTerm 5 e1, "==", prettyTerm 5 e2 ]
     go (IntLe e1 e2)  = wrap p 4 $ hsep [ prettyTerm 5 e1, "<=", prettyTerm 5 e2 ]
+    go (IntLt e1 e2)  = wrap p 4 $ hsep [ prettyTerm 5 e1, "<", prettyTerm 5 e2 ]
     go (IntAdd e1 e2) = wrap p 6 $ hsep [ prettyTerm 6 e1, "+", prettyTerm 7 e2 ]
     go (IntSub e1 e2) = wrap p 6 $ hsep [ prettyTerm 6 e1, "-", prettyTerm 7 e2 ]
     go (IntMul e1 e2) = wrap p 7 $ hsep [ prettyTerm 7 e1, "*", prettyTerm 8 e2 ]

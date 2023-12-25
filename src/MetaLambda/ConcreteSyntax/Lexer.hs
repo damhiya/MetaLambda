@@ -23,6 +23,7 @@ token = do
     , P.string ":"  $> TColon
     , P.string "==" $> TEq
     , P.string "<=" $> TLe
+    , P.string "<"  $> TLt
     , P.string "="  $> TEqual
     , P.string "->" $> TArrow
     , P.string "|-" $> TRTack

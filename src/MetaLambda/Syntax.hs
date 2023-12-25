@@ -21,6 +21,7 @@ type LECtx = [Id]
 data PrimOp t
   = IntEq t t
   | IntLe t t
+  | IntLt t t
   | IntAdd t t
   | IntSub t t
   | IntMul t t

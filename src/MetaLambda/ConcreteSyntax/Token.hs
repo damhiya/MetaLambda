@@ -10,6 +10,7 @@ data Tok
   | TEqual
   | TEq
   | TLe
+  | TLt
   | TPlus
   | TMinus
   | TProd
