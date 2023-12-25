@@ -83,7 +83,7 @@ substv (x, v) = go
                                | otherwise          -> ListMatch (go e0) (go e1) y1 y2 (go e2)
       Lam y t e | y == x    -> Lam y t e
                 | otherwise -> Lam y t (go e)
-      Fix t1 t2 f y e | y == x -> Fix t1 t2 f y e
+      Fix t1 t2 f y e | f == x || y == x -> Fix t1 t2 f y e
                       | otherwise -> Fix t1 t2 f y (go e)
       App e1 e2 -> App (go e1) (go e2)
       Box octx e -> Box octx e

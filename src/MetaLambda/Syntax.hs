@@ -69,6 +69,7 @@ data Value
   | VLam Id Type Term
   | VFix Type Type Id Id Term
   | VBox LCtx Term
+  deriving Show
 
 liftToTerm :: Value -> Term
 liftToTerm = \case
