@@ -28,7 +28,7 @@ data PrimOp t
   | IntMod t t
   | IntPow t t
   | Inject t
-  deriving Show
+  deriving (Show, Functor)
 
 data Term
   = Var Id
@@ -56,3 +56,26 @@ data Term
   | Clo GId [Term]
   | PrimOp (PrimOp Term)
   deriving Show
+
+data Value
+  = VTrue
+  | VFalse
+  | VInt Integer
+  | VPair Value Value
+  | VNil Type
+  | VCons Value Value
+  | VLam Id Type Term
+  | VFix Type Type Id Id Term
+  | VBox LCtx Term
+
+liftToTerm :: Value -> Term
+liftToTerm = \case
+  VTrue -> BTrue
+  VFalse -> BFalse
+  VInt n -> IntLit n
+  VPair v1 v2 -> Pair (liftToTerm v1) (liftToTerm v2)
+  VNil t -> Nil t
+  VCons v1 v2 -> Cons (liftToTerm v1) (liftToTerm v2)
+  VLam x t e -> Lam x t e
+  VFix t1 t2 f x e -> Fix t1 t2 f x e
+  VBox octx e -> Box octx e

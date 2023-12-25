@@ -10,6 +10,7 @@ import           MetaLambda.ConcreteSyntax.Lexer
 import           MetaLambda.ConcreteSyntax.Parser
 import           MetaLambda.ConcreteSyntax.PrettyPrinter
 import           MetaLambda.Evaluation
+import           MetaLambda.Syntax
 import           MetaLambda.Typing
 import           Util
 
@@ -43,7 +44,7 @@ body = do
   printRepl (prettyTerm 1 e)
   t  <- liftReplError ErrType $ inferType [] [] e
   printRepl (prettyType 1 t)
-  printRepl (prettyTerm 1 (eval e))
+  printRepl (prettyTerm 1 (liftToTerm (eval e)))
 
 loop :: InputT IO ()
 loop = runExceptT body >>= \case
