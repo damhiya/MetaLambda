@@ -12,9 +12,11 @@ wrap p n doc
   | otherwise = doc
 
 prettyId :: Id -> Doc ann
+prettyId (Id x 0) = pretty $ x
 prettyId (Id x i) = pretty $ mconcat [x,"_",show i]
 
 prettyGId :: GId -> Doc ann
+prettyGId (GId u 0) = pretty $ u
 prettyGId (GId u i) = pretty $ mconcat [u,"_",show i]
 
 typing :: Id -> Type -> Doc ann
