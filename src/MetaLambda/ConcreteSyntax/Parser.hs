@@ -214,13 +214,13 @@ grammar = mdo
     e2 <- term1
     pure (TLetBox g u e1 e2)
 
-  -- others
   clo <- E.rule $ do
     u <- gident
     tok T.With
     es <- parens $ sepBy' (tok T.Comma) term1
     pure (TClo u es)
 
+  -- others
   letin <- E.rule $ do
     tok T.Let
     x <- ident

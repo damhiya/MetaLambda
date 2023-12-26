@@ -53,8 +53,8 @@ data Term
   -- box
   | TBox LCtx Term
   | TLetBox LECtx GId Term Term
-  -- others
   | TClo GId [Term]
+  -- others
   | TLet Id Term Term
   | TPrimOp (PrimOp Term)
   deriving Show
