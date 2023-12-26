@@ -93,6 +93,15 @@ grammar = mdo
     tok T.End
     pure (TBoolMatch e e1 e2)
 
+  ifThenElse <- E.rule $ do
+    tok T.If
+    e <- term2
+    tok T.Then
+    e1 <- term1
+    tok T.Else
+    e2 <- term1
+    pure (TBoolMatch e e1 e2)
+
   -- integer
   intLit <- E.rule $ do
     n <- number
@@ -290,7 +299,7 @@ grammar = mdo
   term5  <- E.rule $ term6 <|> cons
   term4  <- E.rule $ term5 <|> intEq <|> intLe <|> intLt
   let term2 = term4
-  term1  <- E.rule $ term2 <|> lam <|> fix <|> letbox <|> letin
+  term1  <- E.rule $ term2 <|> lam <|> fix <|> letbox <|> letin <|> ifThenElse
 
   pure term1
   where

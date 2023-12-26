@@ -50,6 +50,9 @@ token = do
           "match"  -> T.Match
           "with"   -> T.With
           "end"    -> T.End
+          "if"     -> T.If
+          "then"   -> T.Then
+          "else"   -> T.Else
           "base"   -> T.Base
           "bool"   -> T.Bool
           "int"    -> T.Int

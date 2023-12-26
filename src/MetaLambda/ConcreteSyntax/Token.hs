@@ -32,6 +32,9 @@ data Tok
   | Match
   | With
   | End
+  | If
+  | Then
+  | Else
   | Base
   | Bool
   | Int

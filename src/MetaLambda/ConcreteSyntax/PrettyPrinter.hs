@@ -27,11 +27,7 @@ prettyTerm _ (TVar x) = prettyId x
 prettyTerm _ TTrue = "true"
 prettyTerm _ TFalse = "false"
 prettyTerm _ (TBoolMatch e0 e1 e2) =
-  hsep [ "match", prettyTerm 2 e0, "with"
-       , "|", "true",  "->", prettyTerm 1 e1
-       , "|", "false", "->", prettyTerm 1 e2
-       , "end"
-       ]
+  hsep [ "if", prettyTerm 2 e0, "then", prettyTerm 1 e1, "else", prettyTerm 2 e2 ]
 prettyTerm _ (TInt n) = pretty n
 prettyTerm _ (TPair e1 e2) = pair (prettyTerm 1 e1) (prettyTerm 1 e2)
 prettyTerm _ (TProdMatch e0 x y e1) =
