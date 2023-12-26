@@ -32,31 +32,31 @@ data PrimOp t
   deriving (Show, Functor)
 
 data Term
-  = Var Id
+  = TVar Id
   -- bool
-  | BTrue
-  | BFalse
-  | BoolMatch Term Term Term
+  | TTrue
+  | TFalse
+  | TBoolMatch Term Term Term
   -- integer
-  | IntLit Integer
+  | TInt Integer
   -- product
-  | Pair Term Term
-  | ProdMatch Term Id Id Term
+  | TPair Term Term
+  | TProdMatch Term Id Id Term
   -- list
-  | Nil Type
-  | Cons Term Term
-  | ListMatch Term Term Id Id Term
+  | TNil Type
+  | TCons Term Term
+  | TListMatch Term Term Id Id Term
   -- function
-  | Lam Id Type Term
-  | Fix Type Type Id Id Term
-  | App Term Term
+  | TLam Id Type Term
+  | TFix Type Type Id Id Term
+  | TApp Term Term
   -- box
-  | Box LCtx Term
-  | LetBox LECtx GId Term Term
+  | TBox LCtx Term
+  | TLetBox LECtx GId Term Term
   -- others
-  | Clo GId [Term]
-  | Let Id Term Term
-  | PrimOp (PrimOp Term)
+  | TClo GId [Term]
+  | TLet Id Term Term
+  | TPrimOp (PrimOp Term)
   deriving Show
 
 data Value
@@ -73,12 +73,12 @@ data Value
 
 liftToTerm :: Value -> Term
 liftToTerm = \case
-  VTrue -> BTrue
-  VFalse -> BFalse
-  VInt n -> IntLit n
-  VPair v1 v2 -> Pair (liftToTerm v1) (liftToTerm v2)
-  VNil t -> Nil t
-  VCons v1 v2 -> Cons (liftToTerm v1) (liftToTerm v2)
-  VLam x t e -> Lam x t e
-  VFix t1 t2 f x e -> Fix t1 t2 f x e
-  VBox octx e -> Box octx e
+  VTrue -> TTrue
+  VFalse -> TFalse
+  VInt n -> TInt n
+  VPair v1 v2 -> TPair (liftToTerm v1) (liftToTerm v2)
+  VNil t -> TNil t
+  VCons v1 v2 -> TCons (liftToTerm v1) (liftToTerm v2)
+  VLam x t e -> TLam x t e
+  VFix t1 t2 f x e -> TFix t1 t2 f x e
+  VBox octx e -> TBox octx e

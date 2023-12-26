@@ -3,45 +3,45 @@ module MetaLambda.ConcreteSyntax.Token where
 import           Text.Megaparsec.Pos
 
 data Tok
-  = TDot
-  | TComma
-  | TBar
-  | TColon
-  | TEqual
-  | TEq
-  | TLe
-  | TLt
-  | TPlus
-  | TMinus
-  | TProd
-  | TDiv
-  | TMod
-  | TPow
-  | TCons
-  | TArrow
-  | TRTack
-  | TBrkL
-  | TBrkR
-  | TParL
-  | TParR
-  | TFn
-  | TFix
-  | TBox
-  | TLet
-  | TIn
-  | TMatch
-  | TWith
-  | TEnd
-  | TBase
-  | TBool
-  | TInt
-  | TList
-  | TTrue
-  | TFalse
-  | TOf
-  | TInject
-  | TIdent String
-  | TIntLit Integer
+  = Dot
+  | Comma
+  | Bar
+  | Colon
+  | Equal
+  | Eq
+  | Le
+  | Lt
+  | Plus
+  | Minus
+  | Prod
+  | Div
+  | Mod
+  | Pow
+  | Cons
+  | Arrow
+  | RTack
+  | BrkL
+  | BrkR
+  | ParL
+  | ParR
+  | Fn
+  | Fix
+  | Box
+  | Let
+  | In
+  | Match
+  | With
+  | End
+  | Base
+  | Bool
+  | Int
+  | List
+  | True
+  | False
+  | Of
+  | Inject
+  | Ident String
+  | Num Integer
   deriving (Eq, Show)
 
 data Token = Token SourcePos Tok -- deriving Show

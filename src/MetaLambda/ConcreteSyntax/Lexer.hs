@@ -2,70 +2,70 @@ module MetaLambda.ConcreteSyntax.Lexer where
 
 import           Control.Applicative
 import           Control.Monad.Except
+import           Data.Char
 import           Data.Functor
 import           Data.Text
-import           Data.Char
 import           Data.Void
-import           MetaLambda.ConcreteSyntax.Token
-import qualified Text.Megaparsec      as P
-import qualified Text.Megaparsec.Char as P
+import qualified MetaLambda.ConcreteSyntax.Token as T
+import qualified Text.Megaparsec                 as P
+import qualified Text.Megaparsec.Char            as P
 
 type PM = P.Parsec Void Text
 type LexError = P.ParseErrorBundle Text Void
 
-token :: PM Token
+token :: PM T.Token
 token = do
   pos <- P.getSourcePos
   tok <- P.choice
-    [ P.string "."  $> TDot
-    , P.string ","  $> TComma
-    , P.string "::" $> TCons
-    , P.string ":"  $> TColon
-    , P.string "==" $> TEq
-    , P.string "<=" $> TLe
-    , P.string "<"  $> TLt
-    , P.string "="  $> TEqual
-    , P.string "->" $> TArrow
-    , P.string "|-" $> TRTack
-    , P.string "|"  $> TBar
-    , P.string "["  $> TBrkL
-    , P.string "]"  $> TBrkR
-    , P.string "("  $> TParL
-    , P.string ")"  $> TParR
-    , P.string "+"  $> TPlus
-    , P.string "-"  $> TMinus
-    , P.string "*"  $> TProd
-    , P.string "/"  $> TDiv
-    , P.string "%"  $> TMod
-    , P.string "^"  $> TPow
+    [ P.string "."  $> T.Dot
+    , P.string ","  $> T.Comma
+    , P.string "::" $> T.Cons
+    , P.string ":"  $> T.Colon
+    , P.string "==" $> T.Eq
+    , P.string "<=" $> T.Le
+    , P.string "<"  $> T.Lt
+    , P.string "="  $> T.Equal
+    , P.string "->" $> T.Arrow
+    , P.string "|-" $> T.RTack
+    , P.string "|"  $> T.Bar
+    , P.string "["  $> T.BrkL
+    , P.string "]"  $> T.BrkR
+    , P.string "("  $> T.ParL
+    , P.string ")"  $> T.ParR
+    , P.string "+"  $> T.Plus
+    , P.string "-"  $> T.Minus
+    , P.string "*"  $> T.Prod
+    , P.string "/"  $> T.Div
+    , P.string "%"  $> T.Mod
+    , P.string "^"  $> T.Pow
     , do
         x <- headChar
         xs <- many tailChar
         pure $ case x:xs of
-          "fn"   -> TFn
-          "fix"  -> TFix
-          "box"  -> TBox
-          "let"  -> TLet
-          "in"   -> TIn
-          "match"-> TMatch
-          "with" -> TWith
-          "end"  -> TEnd
-          "base" -> TBase
-          "bool" -> TBool
-          "int"  -> TInt
-          "list" -> TList
-          "true" -> TTrue
-          "false"-> TFalse
-          "of"   -> TOf
-          "inject"-> TInject
-          ident  -> TIdent ident
+          "fn"     -> T.Fn
+          "fix"    -> T.Fix
+          "box"    -> T.Box
+          "let"    -> T.Let
+          "in"     -> T.In
+          "match"  -> T.Match
+          "with"   -> T.With
+          "end"    -> T.End
+          "base"   -> T.Base
+          "bool"   -> T.Bool
+          "int"    -> T.Int
+          "list"   -> T.List
+          "true"   -> T.True
+          "false"  -> T.False
+          "of"     -> T.Of
+          "inject" -> T.Inject
+          ident    -> T.Ident ident
     , do
         ds <- some P.digitChar
         let n = number 0 ds
-        pure (TIntLit n)
+        pure (T.Num n)
     ]
   P.space
-  pure (Token pos tok)
+  pure (T.Token pos tok)
   where
     headChar = P.letterChar <|> P.char '_'
     tailChar = P.alphaNumChar <|> P.char '_'
@@ -75,8 +75,8 @@ token = do
       where
         n = fromIntegral (ord d - ord '0')
 
-tokens :: PM [Token]
+tokens :: PM [T.Token]
 tokens = P.space *> many token <* P.eof
 
-tokenize :: MonadError LexError m => String -> Text -> m [Token]
+tokenize :: MonadError LexError m => String -> Text -> m [T.Token]
 tokenize f s = liftEither (P.parse tokens f s)

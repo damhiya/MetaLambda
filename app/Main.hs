@@ -2,9 +2,9 @@ module Main where
 
 import           Control.Monad.Except
 import           Data.Bifunctor
-import qualified Data.Text                as T
+import qualified Data.Text                               as T
 import           System.Console.Haskeline
-import qualified Text.Megaparsec          as P
+import qualified Text.Megaparsec                         as P
 
 import           MetaLambda.ConcreteSyntax.Lexer
 import           MetaLambda.ConcreteSyntax.Parser

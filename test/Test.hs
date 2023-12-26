@@ -1,18 +1,18 @@
 module Main where
 
-import Data.Text (Text)
-import qualified Data.Text as T
-import Test.Tasty
+import           Data.Text                  (Text)
+import qualified Data.Text                  as T
+import qualified Data.Text.IO               as T
+import           System.Directory
+import           Test.Tasty
 import qualified Test.Tasty.Golden.Advanced as Tasty
-import System.Directory
-import qualified Data.Text.IO as T
 
-import Syntax
-import Parser.Lexer
-import Parser.Parser
-import Reduction.Evaluation
-import Equality
-import PrettyPrinter
+import           Equality
+import           Parser.Lexer
+import           Parser.Parser
+import           PrettyPrinter
+import           Reduction.Evaluation
+import           Syntax
 
 -- close : [ f : Base -> Base |- Base -> Base ] -> [ |- (Base -> Base) -> Base -> Base ]
 -- close = fn c -> let box (f.U) = c in box(. fn g -> U with g)
@@ -140,7 +140,7 @@ parseTerm f s = do
     Left err -> Left (show err)
     Right ts -> case parser ts of
       Left err -> Left (show err)
-      Right e -> Right e
+      Right e  -> Right e
 
 main :: IO ()
 main = do
