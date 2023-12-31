@@ -139,10 +139,10 @@ substGlobal s (TApp e1 e2) = TApp (substGlobal s e1) (substGlobal s e2)
 substGlobal s (TBox octx oe) = TBox octx (substGlobal s oe)
 substGlobal s@(u, _, _) (TLetBox v e1 e2)
   | v == u    = TLetBox v (substGlobal s e1) e2
-  | otherwise = TLetBox v (substGlobal s e1) (substGlobal s e2)
+  | otherwise = TLetBox v (substGlobal s e1) (substGlobal s e2) -- FIXME : rename v
 substGlobal s@(u,oectx,oe) e@(TClo v es)
   | v == u    = let es' = second (substGlobal s) <$> es
                 in applySubst es' oe
-  | otherwise = e
+  | otherwise = e -- FIXME : apply s to es
 substGlobal s (TLet x e1 e2) = TLet x (substGlobal s e1) (substGlobal s e2)
 substGlobal s (TPrimOp op) = TPrimOp (substGlobal s <$> op)
