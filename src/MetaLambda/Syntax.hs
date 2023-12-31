@@ -16,6 +16,7 @@ data Type
   deriving (Show, Eq)
 type LCtx = [(Id, Type)]
 type LECtx = [Id]
+type GCtx = [(GId, (LCtx, Type))]
 
 -- term definition
 data PrimOp t
@@ -70,6 +71,16 @@ data Value
   | VFix Type Type Id Id Term
   | VBox LCtx Term
   deriving Show
+
+-- helper functions
+lookupId :: LCtx -> Id -> Maybe Type
+lookupId ctx x = lookup x ctx
+
+lookupGId :: GCtx -> GId -> Maybe (LCtx, Type)
+lookupGId gctx u = lookup u gctx
+
+erase :: LCtx -> LECtx
+erase = map fst
 
 liftToTerm :: Value -> Term
 liftToTerm = \case

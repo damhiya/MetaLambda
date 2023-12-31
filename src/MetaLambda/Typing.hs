@@ -13,20 +13,7 @@ data TypeError
   | GuardError
   deriving Show
 
--- global context
-type GCtx = [(GId, LCtx, Type)]
-
--- lookup functions
-lookupId :: LCtx -> Id -> Maybe Type
-lookupId ctx x = lookup x ctx
-
-lookupGId :: GCtx -> GId -> Maybe (LCtx, Type)
-lookupGId gctx u = lookup u $ map (\(x,y,z) -> (x,(y,z))) gctx
-
--- erase type in the context
-erase :: LCtx -> LECtx
-erase = map fst
-
+-- type checking
 inferType :: MonadError TypeError m => GCtx -> LCtx -> Term -> m Type
 inferType gctx ctx (TVar x) = with LookUpError $ lookupId ctx x
 inferType gctx ctx TTrue = pure Bool
@@ -88,7 +75,7 @@ inferType gctx ctx (TBox octx oe) = do
 inferType gctx ctx (TLetBox u e1 e2) =
   inferType gctx ctx e1 >>= \case
     BoxT octx ot -> do
-      inferType ((u, octx, ot) : gctx) ctx e2
+      inferType ((u, (octx, ot)) : gctx) ctx e2
     _ -> throwError MatchError
 inferType gctx ctx (TClo u es) = do
   (octx, ot) <- with LookUpError $ lookupGId gctx u
