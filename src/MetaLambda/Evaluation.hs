@@ -23,14 +23,14 @@ eval (TPair e1 e2) =
   in VPair v1 v2
 eval (TProdMatch e0 x y e1) =
   case eval e0 of
-    VPair vx vy -> eval (substv (x, vx) . substv (y,vy) $ e1)
+    VPair vx vy -> eval (applySubst [(y, liftToTerm vy), (x, liftToTerm vx)] e1)
     _           -> invalid
 eval (TNil t) = VNil t
 eval (TCons e1 e2) = VCons (eval e1) (eval e2)
 eval (TListMatch e0 e1 x xs e2) =
   case eval e0 of
     VNil t       -> eval e1
-    VCons vx vxs -> eval (substv (x, vx) . substv (xs,vxs) $ e2)
+    VCons vx vxs -> eval (applySubst [(xs, liftToTerm vxs), (x, liftToTerm vx)] e2)
     _            -> invalid
 eval (TLam x t e) = VLam x t e
 eval (TFix t1 t2 f x e) = VFix t1 t2 f x e
@@ -38,8 +38,8 @@ eval (TApp e1 e2) =
   let v1 = eval e1
       v2 = eval e2
   in case v1 of
-       VLam x _ e3         -> eval (substv (x, v2) e3)
-       vf@(VFix _ _ f x e) -> eval (substv (f,vf) . substv (x,v2) $ e)
+       VLam x _ e3         -> eval (applySubst [(x, liftToTerm v2)] e3)
+       vf@(VFix _ _ f x e) -> eval (applySubst [(x, liftToTerm v2), (f, liftToTerm vf)] e)
        _                   -> invalid
 eval (TBox octx e) = VBox octx e
 eval (TLetBox u e1 e2) =
@@ -49,7 +49,7 @@ eval (TLetBox u e1 e2) =
 eval (TClo _ _) = invalid
 eval (TLet x e1 e2) =
   let v = eval e1
-   in eval (substv (x,v) e2)
+   in eval (applySubst [(x,liftToTerm v)] e2)
 eval (TPrimOp op) = go op
   where
     go (IntEq e1 e2)  = binop (\m n -> if m == n then VTrue else VFalse) e1 e2
