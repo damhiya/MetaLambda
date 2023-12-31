@@ -57,9 +57,9 @@ prettyTerm p (TFix t1 t2 f x e) =
                   ]
 prettyTerm p (TApp t1 t2) = wrap p 2 $ prettyTerm 2 t1 <+> prettyTerm 3 t2
 prettyTerm _ (TBox ctx t) = "box" <> brackets (prettyLCtx ctx <+> dot <+> prettyTerm 1 t)
-prettyTerm p (TLetBox ectx u e1 e2) =
+prettyTerm p (TLetBox u e1 e2) =
   wrap p 1 $ hsep [ "let"
-                  , "box" <> brackets (prettyLECtx ectx <+> dot <+> prettyGId u)
+                  , "box" <> brackets (prettyGId u)
                   , "="
                   , prettyTerm 1 e1
                   , "in"
@@ -106,6 +106,3 @@ prettyType _ (BoxT ctx t) = brackets $
 
 prettyLCtx :: LCtx -> Doc ann
 prettyLCtx ctx = hsep $ punctuate comma $ map (uncurry typing) $ reverse ctx
-
-prettyLECtx :: LECtx -> Doc ann
-prettyLECtx ectx = hsep $ punctuate comma $ map prettyId $ reverse ectx

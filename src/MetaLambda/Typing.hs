@@ -85,10 +85,9 @@ inferType gctx ctx (TApp e1 e2) = do
 inferType gctx ctx (TBox octx oe) = do
   ot <- inferType gctx octx oe
   pure (BoxT octx ot)
-inferType gctx ctx (TLetBox oectx u e1 e2) =
+inferType gctx ctx (TLetBox u e1 e2) =
   inferType gctx ctx e1 >>= \case
     BoxT octx ot -> do
-      with GuardError $ guard (oectx == erase octx)
       inferType ((u, octx, ot) : gctx) ctx e2
     _ -> throwError MatchError
 inferType gctx ctx (TClo u es) = do

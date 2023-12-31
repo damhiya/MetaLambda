@@ -52,7 +52,7 @@ data Term
   | TApp Term Term
   -- box
   | TBox LCtx Term
-  | TLetBox LECtx GId Term Term
+  | TLetBox GId Term Term
   | TClo GId [Term]
   -- others
   | TLet Id Term Term

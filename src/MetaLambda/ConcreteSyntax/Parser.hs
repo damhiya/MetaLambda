@@ -62,8 +62,6 @@ grammar = mdo
     t <- typ1
     pure (x, t)
 
-  ectx <- E.rule $ sepBy' (tok T.Comma) ident
-
   {- terms -}
   var <- E.rule $ do
     x <- ident
@@ -204,15 +202,13 @@ grammar = mdo
     tok T.Let
     tok T.Box
     tok T.BrkL
-    g <- ectx
-    tok T.Dot
     u <- gident
     tok T.BrkR
     tok T.Equal
     e1 <- term1
     tok T.In
     e2 <- term1
-    pure (TLetBox g u e1 e2)
+    pure (TLetBox u e1 e2)
 
   clo <- E.rule $ do
     u <- gident

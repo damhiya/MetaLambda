@@ -32,7 +32,7 @@ fromTerm (TLam _ _ e)        = fromTerm e
 fromTerm (TFix _ _ _ _ e)    = fromTerm e
 fromTerm (TApp e1 e2)        = fromTerm e1 <> fromTerm e2
 fromTerm (TBox _ _)          = mempty
-fromTerm (TLetBox _ _ e1 e2) = fromTerm e1 <> fromTerm e2
+fromTerm (TLetBox _ e1 e2) = fromTerm e1 <> fromTerm e2
 fromTerm (TClo _ es)         = mconcat (map fromTerm es)
 fromTerm (TLet _ e1 e2)      = fromTerm e1 <> fromTerm e2
 fromTerm (TPrimOp op)        = go op
@@ -87,7 +87,7 @@ substv (x, v) = go
                       | otherwise -> TFix t1 t2 f y (go e)
       TApp e1 e2 -> TApp (go e1) (go e2)
       TBox octx e -> TBox octx e
-      TLetBox oectx u e1 e2 -> TLetBox oectx u (go e1) (go e2)
+      TLetBox u e1 e2 -> TLetBox u (go e1) (go e2)
       TClo u es -> TClo u (go <$> es)
       TLet y e1 e2 | y == x    -> TLet y (go e1) e2
                   | otherwise -> TLet y (go e1) (go e2)
@@ -122,9 +122,9 @@ substGlobal s (TLam x t e) = TLam x t (substGlobal s e)
 substGlobal s (TFix t1 t2 f x e) = TFix t1 t2 f x (substGlobal s e)
 substGlobal s (TApp e1 e2) = TApp (substGlobal s e1) (substGlobal s e2)
 substGlobal s (TBox octx oe) = TBox octx (substGlobal s oe)
-substGlobal s@(u, _, _) (TLetBox oectx v e1 e2)
-  | v == u    = TLetBox oectx v (substGlobal s e1) e2
-  | otherwise = TLetBox oectx v (substGlobal s e1) (substGlobal s e2)
+substGlobal s@(u, _, _) (TLetBox v e1 e2)
+  | v == u    = TLetBox v (substGlobal s e1) e2
+  | otherwise = TLetBox v (substGlobal s e1) (substGlobal s e2)
 substGlobal s@(u,oectx,oe) e@(TClo v es)
   | v == u    = let es' = map (substGlobal s) es
                 in substSim (Map.fromList $ zip oectx es') oe
@@ -168,7 +168,7 @@ substSim s (TFix t1 t2 f x e) =
   in TFix t1 t2 f' x' (substSim s' e)
 substSim s (TApp e1 e2) = TApp (substSim s e1) (substSim s e2)
 substSim s e@(TBox _ _) = e
-substSim s (TLetBox oectx u e1 e2) = TLetBox oectx u (substSim s e1) (substSim s e2)
+substSim s (TLetBox u e1 e2) = TLetBox u (substSim s e1) (substSim s e2)
 substSim s (TClo u es) = TClo u (substSim s <$> es)
 substSim s (TLet x e1 e2) =
   let x' = newId (foldMap fromTerm s) x

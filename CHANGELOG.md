@@ -1,6 +1,8 @@
 # Revision history for MetaLambda
 
 ## Dev
+Change
+* let-box syntax `let box[Ψ.U] = e1 in e2` -> `let box[U] = e1 in e2`
 
 ## 0.2
 Add

@@ -42,9 +42,9 @@ eval (TApp e1 e2) =
        vf@(VFix _ _ f x e) -> eval (substv (f,vf) . substv (x,v2) $ e)
        _                   -> invalid
 eval (TBox octx e) = VBox octx e
-eval (TLetBox oectx u e1 e2) =
+eval (TLetBox u e1 e2) =
   case eval e1 of
-    VBox octx oe -> eval (substGlobal (u, oectx, oe) e2)
+    VBox octx oe -> eval (substGlobal (u, erase octx, oe) e2)
     _            -> invalid
 eval (TClo _ _) = invalid
 eval (TLet x e1 e2) =
