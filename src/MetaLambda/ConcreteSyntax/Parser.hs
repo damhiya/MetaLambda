@@ -62,6 +62,13 @@ grammar = mdo
     t <- typ1
     pure (x, t)
 
+  {- substitutions -}
+  subst <- E.rule $ brackets $ sepBy' (tok T.Comma) $ do
+    e <- term1
+    tok T.Div
+    x <- ident
+    pure (x,e)
+
   {- terms -}
   var <- E.rule $ do
     x <- ident
@@ -213,8 +220,8 @@ grammar = mdo
   clo <- E.rule $ do
     u <- gident
     tok T.With
-    es <- parens $ sepBy' (tok T.Comma) term1
-    pure (TClo u es)
+    s <- subst
+    pure (TClo u s)
 
   -- others
   letin <- E.rule $ do

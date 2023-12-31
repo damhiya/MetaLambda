@@ -77,13 +77,10 @@ inferType gctx ctx (TLetBox u e1 e2) =
     BoxT octx ot -> do
       inferType ((u, (octx, ot)) : gctx) ctx e2
     _ -> throwError MatchError
-inferType gctx ctx (TClo u es) = do
+inferType gctx ctx (TClo u s) = do
   (octx, ot) <- with LookUpError $ lookupGId gctx u
-  with GuardError $ guard (length octx == length es)
-  let ts = map snd octx
-  forM_ (zip ts es) $ \(t, e) -> do
-    t' <- inferType gctx ctx e
-    with GuardError $ guard (t == t')
+  octx' <- inferTypeSubst gctx ctx s
+  with GuardError $ guard (octx == octx')
   pure ot
 inferType gctx ctx (TLet x e1 e2) = do
   t <- inferType gctx ctx e1
@@ -114,3 +111,10 @@ inferType gctx ctx (TPrimOp op) = go op
       inferType gctx ctx e >>= \case
         Int -> pure (BoxT [] Int)
         _ -> throwError MatchError
+
+inferTypeSubst :: MonadError TypeError m => GCtx -> LCtx -> Subst -> m LCtx
+inferTypeSubst gctx ctx [] = pure []
+inferTypeSubst gctx ctx ((x,e) : s) = do
+  ctx' <- inferTypeSubst gctx ctx s
+  t <- inferType gctx ctx e
+  pure ((x,t) : ctx')

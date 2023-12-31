@@ -65,7 +65,7 @@ prettyTerm p (TLetBox u e1 e2) =
                   , "in"
                   , prettyTerm 1 e2
                   ]
-prettyTerm p (TClo u es) = wrap p 1 $ hsep [prettyGId u, "with", tupled (map (prettyTerm 1) es)]
+prettyTerm p (TClo u s) = wrap p 1 $ hsep [prettyGId u, "with", prettySubst s]
 prettyTerm p (TLet x e1 e2) =
   wrap p 1 $ hsep [ "let"
                   , prettyId x
@@ -106,3 +106,8 @@ prettyType _ (BoxT ctx t) = brackets $
 
 prettyLCtx :: LCtx -> Doc ann
 prettyLCtx ctx = hsep $ punctuate comma $ map (uncurry typing) $ reverse ctx
+
+prettySubst :: Subst -> Doc ann
+prettySubst s = brackets $ hsep $ punctuate comma $ map go $ reverse s
+  where
+    go (x,e) = hsep [prettyTerm 1 e, "/", prettyId x]

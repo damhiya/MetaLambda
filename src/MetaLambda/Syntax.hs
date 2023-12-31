@@ -17,6 +17,7 @@ data Type
 type LCtx = [(Id, Type)]
 type LECtx = [Id]
 type GCtx = [(GId, (LCtx, Type))]
+type Subst = [(Id, Term)]
 
 -- term definition
 data PrimOp t
@@ -54,7 +55,7 @@ data Term
   -- box
   | TBox LCtx Term
   | TLetBox GId Term Term
-  | TClo GId [Term]
+  | TClo GId Subst
   -- others
   | TLet Id Term Term
   | TPrimOp (PrimOp Term)
@@ -81,6 +82,12 @@ lookupGId gctx u = lookup u gctx
 
 erase :: LCtx -> LECtx
 erase = map fst
+
+lookupSubst :: Subst -> Id -> Maybe Term
+lookupSubst s x = lookup x s
+
+idSubst :: LCtx -> Subst
+idSubst ctx = map (\(x,_) -> (x, TVar x)) ctx
 
 liftToTerm :: Value -> Term
 liftToTerm = \case
