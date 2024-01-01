@@ -1,5 +1,5 @@
 name: MetaLambda
-version: 0.2
+version: 0.3
 synopsis: Contextual Modal Type Theory
 description: Implementation of Contextual Modal Type Theory[Nanevski et al. 2008]
 category: LambdaCalculus

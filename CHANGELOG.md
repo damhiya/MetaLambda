@@ -1,6 +1,8 @@
 # Revision history for MetaLambda
 
 ## Dev
+
+## 0.3
 Add
 * `Subst` type (simultaneous substitution)
 
