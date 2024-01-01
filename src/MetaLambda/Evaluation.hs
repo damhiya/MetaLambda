@@ -3,19 +3,19 @@ module MetaLambda.Evaluation where
 import           MetaLambda.Substitution
 import           MetaLambda.Syntax
 
-invalid :: Value
-invalid = error "not type checked"
+invalid :: Int -> Value
+invalid n = error ("not type checked" ++ show n)
 
 -- call by value evaluation
 eval :: Term -> Value
-eval (TVar _) = invalid
+eval (TVar _) = invalid 0
 eval TTrue = VTrue
 eval TFalse = VFalse
 eval (TBoolMatch e0 e1 e2) =
   case eval e0 of
     VTrue  -> eval e1
     VFalse -> eval e2
-    _      -> invalid
+    _      -> invalid 1
 eval (TInt n) = VInt n
 eval (TPair e1 e2) =
   let v1 = eval e1
@@ -24,14 +24,14 @@ eval (TPair e1 e2) =
 eval (TProdMatch e0 x y e1) =
   case eval e0 of
     VPair vx vy -> eval (applySubst [(y, liftToTerm vy), (x, liftToTerm vx)] e1)
-    _           -> invalid
+    _           -> invalid 2
 eval (TNil t) = VNil t
 eval (TCons e1 e2) = VCons (eval e1) (eval e2)
 eval (TListMatch e0 e1 x xs e2) =
   case eval e0 of
     VNil t       -> eval e1
     VCons vx vxs -> eval (applySubst [(xs, liftToTerm vxs), (x, liftToTerm vx)] e2)
-    _            -> invalid
+    _            -> invalid 3
 eval (TLam x t e) = VLam x t e
 eval (TFix t1 t2 f x e) = VFix t1 t2 f x e
 eval (TApp e1 e2) =
@@ -40,13 +40,13 @@ eval (TApp e1 e2) =
   in case v1 of
        VLam x _ e3         -> eval (applySubst [(x, liftToTerm v2)] e3)
        vf@(VFix _ _ f x e) -> eval (applySubst [(x, liftToTerm v2), (f, liftToTerm vf)] e)
-       _                   -> invalid
+       _                   -> invalid 4
 eval (TBox octx e) = VBox octx e
 eval (TLetBox u e1 e2) =
   case eval e1 of
     VBox octx oe -> eval (applyGSubst (u, (erase octx, oe)) e2)
-    _            -> invalid
-eval (TClo _ _) = invalid
+    _            -> invalid 5
+eval (TClo _ _) = invalid 6
 eval (TLet x e1 e2) =
   let v = eval e1
    in eval (applySubst [(x,liftToTerm v)] e2)
@@ -63,8 +63,8 @@ eval (TPrimOp op) = go op
     go (IntPow e1 e2) = binop (\m n -> VInt (m ^ n)) e1 e2
     go (Inject e) = case eval e of
                       VInt n -> VBox [] (TInt n)
-                      _      -> undefined
+                      _      -> invalid 7
     binop f e1 e2 =
       case (eval e1, eval e2) of
         (VInt m, VInt n) -> f m n
-        _                -> invalid
+        _                -> invalid 8
