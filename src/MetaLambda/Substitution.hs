@@ -11,6 +11,9 @@ import           MetaLambda.Syntax
 class FreeVar a where
   freeVar :: a -> Set Id
 
+class FreeGVar a where
+  freeGVar :: a -> Set GId
+
 instance FreeVar Term where
   freeVar = \case
     TVar x                  -> Set.singleton x
@@ -37,7 +40,7 @@ instance FreeVar Term where
     TLet x e1 e2            -> mconcat [ freeVar e1
                                        , freeVar e2 `Set.difference` Set.singleton x
                                        ]
-    TPrimOp op -> go op
+    TPrimOp op              -> go op
     where
       go (IntEq  e1 e2) = freeVar e1 <> freeVar e2
       go (IntLe  e1 e2) = freeVar e1 <> freeVar e2
@@ -51,7 +54,46 @@ instance FreeVar Term where
       go (Inject e)     = freeVar e
 
 instance FreeVar Subst where
-  freeVar = mconcat . map (freeVar . snd)
+  freeVar = foldMap (freeVar . snd)
+
+instance FreeGVar Term where
+  freeGVar = \case
+    TVar x                  -> mempty
+    TTrue                   -> mempty
+    TFalse                  -> mempty
+    TBoolMatch e1 e2 e3     -> foldMap freeGVar [e1, e2, e3]
+    TInt _                  -> mempty
+    TPair e1 e2             -> foldMap freeGVar [e1, e2]
+    TProdMatch e1 x y e2    -> foldMap freeGVar [e1, e2]
+    TNil _                  -> mempty
+    TCons e1 e2             -> foldMap freeGVar [e1, e2]
+    TListMatch e1 e2 x y e3 -> foldMap freeGVar [e1, e2, e3]
+    TLam x _ e              -> freeGVar e
+    TFix _ _ f x e          -> freeGVar e
+    TApp e1 e2              -> foldMap freeGVar [e1, e2]
+    TBox octx oe            -> freeGVar oe
+    TLetBox u e1 e2         -> mconcat [ freeGVar e1
+                                       , freeGVar e2 `Set.difference` Set.singleton u
+                                       ]
+    TClo u s                -> mconcat [ Set.singleton u
+                                       , freeGVar s
+                                       ]
+    TLet x e1 e2            -> foldMap freeGVar [e1, e2]
+    TPrimOp op              -> go op
+    where
+      go (IntEq  e1 e2) = freeGVar e1 <> freeGVar e2
+      go (IntLe  e1 e2) = freeGVar e1 <> freeGVar e2
+      go (IntLt  e1 e2) = freeGVar e1 <> freeGVar e2
+      go (IntAdd e1 e2) = freeGVar e1 <> freeGVar e2
+      go (IntSub e1 e2) = freeGVar e1 <> freeGVar e2
+      go (IntMul e1 e2) = freeGVar e1 <> freeGVar e2
+      go (IntDiv e1 e2) = freeGVar e1 <> freeGVar e2
+      go (IntMod e1 e2) = freeGVar e1 <> freeGVar e2
+      go (IntPow e1 e2) = freeGVar e1 <> freeGVar e2
+      go (Inject e)     = freeGVar e
+
+instance FreeGVar Subst where
+  freeGVar = foldMap (freeGVar . snd)
 
 freshId :: Set Id -> Id -> Id
 freshId fv (Id x i) = Id x i'
@@ -60,6 +102,15 @@ freshId fv (Id x i) = Id x i'
     go (Id y j) | y == x    = Just (Max j)
                 | otherwise = Nothing
     a  = getMax <$> foldMap go fv
+    i' = maybe i (+1) a
+
+freshGId :: Set GId -> GId -> GId
+freshGId fv (GId x i) = GId x i'
+  where
+    go :: GId -> Maybe (Max Integer)
+    go (GId y j) | y == x    = Just (Max j)
+                 | otherwise = Nothing
+    a = getMax <$> foldMap go fv
     i' = maybe i (+1) a
 
 -- substitutions
@@ -122,27 +173,85 @@ applySubst = go
 composeSubst :: Subst -> Subst -> Subst
 composeSubst s1 s2 = second (applySubst s1) <$> s2
 
-substGlobal :: (GId, LECtx, Term) -> Term -> Term
-substGlobal s e@(TVar _) = e
-substGlobal s TTrue = TTrue
-substGlobal s TFalse = TFalse
-substGlobal s (TBoolMatch e0 e1 e2) = TBoolMatch (substGlobal s e0) (substGlobal s e1) (substGlobal s e2)
-substGlobal s (TInt n) = TInt n
-substGlobal s (TPair e1 e2) = TPair (substGlobal s e1) (substGlobal s e2)
-substGlobal s (TProdMatch e0 x y e1) = TProdMatch (substGlobal s e0) x y (substGlobal s e1)
-substGlobal s (TNil t) = TNil t
-substGlobal s (TCons e0 e1) = TCons (substGlobal s e0) (substGlobal s e1)
-substGlobal s (TListMatch e0 e1 x xs e2) = TListMatch (substGlobal s e0) (substGlobal s e1) x xs (substGlobal s e2)
-substGlobal s (TLam x t e) = TLam x t (substGlobal s e)
-substGlobal s (TFix t1 t2 f x e) = TFix t1 t2 f x (substGlobal s e)
-substGlobal s (TApp e1 e2) = TApp (substGlobal s e1) (substGlobal s e2)
-substGlobal s (TBox octx oe) = TBox octx (substGlobal s oe)
-substGlobal s@(u, _, _) (TLetBox v e1 e2)
-  | v == u    = TLetBox v (substGlobal s e1) e2
-  | otherwise = TLetBox v (substGlobal s e1) (substGlobal s e2) -- FIXME : rename v
-substGlobal s@(u,oectx,oe) e@(TClo v es)
-  | v == u    = let es' = second (substGlobal s) <$> es
-                in applySubst es' oe
-  | otherwise = e -- FIXME : apply s to es
-substGlobal s (TLet x e1 e2) = TLet x (substGlobal s e1) (substGlobal s e2)
-substGlobal s (TPrimOp op) = TPrimOp (substGlobal s <$> op)
+renameGVar :: (GId, GId) -> Term -> Term
+renameGVar = go
+  where
+    go r@(u,v) = \case
+      TVar x                      -> TVar x
+      TTrue                       -> TTrue
+      TFalse                      -> TFalse
+      TBoolMatch e1 e2 e3         -> TBoolMatch (go r e1) (go r e2) (go r e3)
+      TInt n                      -> TInt n
+      TPair e1 e2                 -> TPair (go r e1) (go r e2)
+      TProdMatch e1 x y e2        -> TProdMatch (go r e1) x y (go r e2)
+      TNil t                      -> TNil t
+      TCons e1 e2                 -> TCons (go r e1) (go r e2)
+      TListMatch e1 e2 x y e3     -> TListMatch (go r e1) (go r e2) x y (go r e3)
+      TLam x t e                  -> TLam x t (go r e)
+      TFix t1 t2 f x e            -> TFix t1 t2 f x (go r e)
+      TApp e1 e2                  -> TApp (go r e1) (go r e2)
+      TBox octx oe                -> TBox octx (go r oe)
+      TLetBox w e1 e2 | w == u    -> TLetBox w (go r e1) e2
+                      | otherwise -> TLetBox w (go r e1) (go r e2)
+      TClo w s | w == u           -> TClo v (renameGVar' r s)
+               | otherwise        -> TClo w (renameGVar' r s)
+      TLet x e1 e2                -> TLet x (go r e1) (go r e2)
+      TPrimOp op                  -> TPrimOp (primop op)
+      where
+        primop (IntEq  e1 e2) = IntEq  (go r e1) (go r e2)
+        primop (IntLe  e1 e2) = IntLe  (go r e1) (go r e2)
+        primop (IntLt  e1 e2) = IntLt  (go r e1) (go r e2)
+        primop (IntAdd e1 e2) = IntAdd (go r e1) (go r e2)
+        primop (IntSub e1 e2) = IntSub (go r e1) (go r e2)
+        primop (IntMul e1 e2) = IntMul (go r e1) (go r e2)
+        primop (IntDiv e1 e2) = IntDiv (go r e1) (go r e2)
+        primop (IntMod e1 e2) = IntMod (go r e1) (go r e2)
+        primop (IntPow e1 e2) = IntPow (go r e1) (go r e2)
+        primop (Inject e)     = Inject (go r e)
+
+renameGVar' :: (GId, GId) -> Subst -> Subst
+renameGVar' r s = second (renameGVar r) <$> s
+
+applyGSubst :: (GId, (LECtx, Term)) -> Term -> Term
+applyGSubst = go
+  where
+    go gs@(u,(_,eu)) = \case
+      TVar x                  -> TVar x
+      TTrue                   -> TTrue
+      TFalse                  -> TFalse
+      TBoolMatch e1 e2 e3     -> TBoolMatch (go gs e1) (go gs e2) (go gs e3)
+      TInt n                  -> TInt n
+      TPair e1 e2             -> TPair (go gs e1) (go gs e2)
+      TProdMatch e1 x y e2    -> TProdMatch (go gs e1) x y (go gs e2)
+      TNil t                  -> TNil t
+      TCons e1 e2             -> TCons (go gs e1) (go gs e2)
+      TListMatch e1 e2 x y e3 -> TListMatch (go gs e1) (go gs e2) x y (go gs e3)
+      TLam x t e              -> TLam x t (go gs e)
+      TFix t1 t2 f x e        -> TFix t1 t2 f x (go gs e)
+      TApp e1 e2              -> TApp (go gs e1) (go gs e2)
+      TBox octx oe            -> TBox octx (go gs oe)
+      TLetBox v e1 e2         -> TLetBox v' (go gs e1) (go gs e2')
+        where
+          fv = freeGVar eu <> Set.singleton u
+          v' = freshGId fv v
+          e2' = renameGVar (v, v') e2
+      TClo v s | v == u       -> applySubst s' eu
+               | otherwise    -> TClo v s'
+        where
+          s' = applyGSubst' gs s
+      TLet x e1 e2            -> TLet x (go gs e1) (go gs e2)
+      TPrimOp op              -> TPrimOp (primop op)
+      where
+        primop (IntEq  e1 e2) = IntEq  (go gs e1) (go gs e2)
+        primop (IntLe  e1 e2) = IntLe  (go gs e1) (go gs e2)
+        primop (IntLt  e1 e2) = IntLt  (go gs e1) (go gs e2)
+        primop (IntAdd e1 e2) = IntAdd (go gs e1) (go gs e2)
+        primop (IntSub e1 e2) = IntSub (go gs e1) (go gs e2)
+        primop (IntMul e1 e2) = IntMul (go gs e1) (go gs e2)
+        primop (IntDiv e1 e2) = IntDiv (go gs e1) (go gs e2)
+        primop (IntMod e1 e2) = IntMod (go gs e1) (go gs e2)
+        primop (IntPow e1 e2) = IntPow (go gs e1) (go gs e2)
+        primop (Inject e)     = Inject (go gs e)
+
+applyGSubst' :: (GId, (LECtx, Term)) -> Subst -> Subst
+applyGSubst' gs s = second (applyGSubst gs) <$> s

@@ -2,7 +2,7 @@ module MetaLambda.Syntax where
 
 -- identifier
 data Id = Id !String !Integer deriving (Show, Eq, Ord)
-data GId = GId !String !Integer deriving (Show, Eq)
+data GId = GId !String !Integer deriving (Show, Eq, Ord)
 
 -- type and local contex
 data Type

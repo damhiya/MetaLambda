@@ -44,7 +44,7 @@ eval (TApp e1 e2) =
 eval (TBox octx e) = VBox octx e
 eval (TLetBox u e1 e2) =
   case eval e1 of
-    VBox octx oe -> eval (substGlobal (u, erase octx, oe) e2)
+    VBox octx oe -> eval (applyGSubst (u, (erase octx, oe)) e2)
     _            -> invalid
 eval (TClo _ _) = invalid
 eval (TLet x e1 e2) =
