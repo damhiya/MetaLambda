@@ -71,10 +71,10 @@ inferType gctx ctx (TApp e1 e2) = do
     _ -> throwError MatchError
 inferType gctx ctx (TBox octx oe) = do
   ot <- inferType gctx octx oe
-  pure (BoxT octx ot)
+  pure (Box octx ot)
 inferType gctx ctx (TLetBox u e1 e2) =
   inferType gctx ctx e1 >>= \case
-    BoxT octx ot -> do
+    Box octx ot -> do
       inferType ((u, (octx, ot)) : gctx) ctx e2
     _ -> throwError MatchError
 inferType gctx ctx (TClo u s) = do
@@ -109,7 +109,7 @@ inferType gctx ctx (TPrimOp op) = go op
       pure Int
     inject e = do
       inferType gctx ctx e >>= \case
-        Int -> pure (BoxT [] Int)
+        Int -> pure (Box [] Int)
         _ -> throwError MatchError
 
 inferTypeSubst :: MonadError TypeError m => GCtx -> LCtx -> Subst -> m LCtx

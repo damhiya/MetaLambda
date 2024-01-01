@@ -44,7 +44,7 @@ body = do
   printRepl (prettyTerm 1 e)
   t  <- liftReplError ErrType $ inferType [] [] e
   printRepl (prettyType 1 t)
-  printRepl (prettyTerm 1 (liftToTerm (eval e)))
+  printRepl (prettyTerm 1 (liftToTerm (evaluate e)))
 
 loop :: InputT IO ()
 loop = runExceptT body >>= \case

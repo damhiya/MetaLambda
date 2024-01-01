@@ -98,7 +98,7 @@ prettyType p (Arr t1 t2) =
                   , "->"
                   , prettyType 1 t2
                   ]
-prettyType _ (BoxT ctx t) = brackets $
+prettyType _ (Box ctx t) = brackets $
   hsep [ prettyLCtx ctx
        , "|-"
        , prettyType 1 t

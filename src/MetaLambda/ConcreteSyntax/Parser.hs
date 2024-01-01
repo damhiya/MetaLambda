@@ -43,7 +43,7 @@ grammar = mdo
     g <- ctx
     tok T.RTack
     t <- typ1
-    pure (BoxT g t)
+    pure (Box g t)
 
   arr <- E.rule $ do
     t1 <- typ2

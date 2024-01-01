@@ -12,7 +12,7 @@ data Type
   | Prod Type Type
   | List Type
   | Arr Type Type
-  | BoxT LCtx Type
+  | Box LCtx Type
   deriving (Show, Eq)
 type LCtx = [(Id, Type)]
 type LECtx = [Id]
