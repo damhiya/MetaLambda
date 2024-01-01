@@ -19,23 +19,23 @@ instance FreeVar Term where
     TVar x                  -> Set.singleton x
     TTrue                   -> mempty
     TFalse                  -> mempty
-    TBoolMatch e1 e2 e3     -> freeVar e1 <> freeVar e2 <> freeVar e3
+    TBoolMatch e1 e2 e3     -> foldMap freeVar [e1, e2, e3]
     TInt _                  -> mempty
-    TPair e1 e2             -> freeVar e1 <> freeVar e2
+    TPair e1 e2             -> foldMap freeVar [e1, e2]
     TProdMatch e1 x y e2    -> mconcat [ freeVar e1
                                        , freeVar e2 `Set.difference` Set.fromList [x,y]
                                        ]
     TNil _                  -> mempty
-    TCons e1 e2             -> freeVar e1 <> freeVar e2
+    TCons e1 e2             -> foldMap freeVar [e1, e2]
     TListMatch e1 e2 x y e3 -> mconcat [ freeVar e1
                                        , freeVar e2
                                        , freeVar e3 `Set.difference` Set.fromList [x,y]
                                        ]
     TLam x _ e              -> freeVar e `Set.difference` Set.singleton x
     TFix _ _ f x e          -> freeVar e `Set.difference` Set.fromList [f,x]
-    TApp e1 e2              -> freeVar e1 <> freeVar e2
+    TApp e1 e2              -> foldMap freeVar [e1, e2]
     TBox _ _                -> mempty
-    TLetBox _ e1 e2         -> freeVar e1 <> freeVar e2
+    TLetBox _ e1 e2         -> foldMap freeVar [e1, e2]
     TClo _ s                -> freeVar s
     TLet x e1 e2            -> mconcat [ freeVar e1
                                        , freeVar e2 `Set.difference` Set.singleton x
