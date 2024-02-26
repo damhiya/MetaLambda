@@ -31,16 +31,16 @@ prettyTerm _ (TBoolMatch e0 e1 e2) =
 prettyTerm _ (TInt n) = pretty n
 prettyTerm _ (TPair e1 e2) = pair (prettyTerm 1 e1) (prettyTerm 1 e2)
 prettyTerm _ (TProdMatch e0 x y e1) =
-  hsep [ "match", prettyTerm 2 e0, "with"
-       , "|",  pair (prettyId x) (prettyId y), "->", prettyTerm 1 e1
-       , "end"
+  hsep [ "case", prettyTerm 2 e0, "of"
+       , pair (prettyId x) (prettyId y), "->", prettyTerm 1 e1
        ]
 prettyTerm p (TNil t) = wrap p 10 $ hsep [ "[]", "of", prettyType 3 t ]
 prettyTerm p (TCons e1 e2) = wrap p 5 $ hsep [ prettyTerm 6 e1, "::", prettyTerm 5 e2 ]
 prettyTerm _ (TListMatch e0 e1 x xs e2) =
-  hsep [ "match", prettyTerm 2 e0, "with"
-       , "|", "[]", "->", prettyTerm 1 e1
-       , "|", prettyId x, "::", prettyId xs, "->", prettyTerm 1 e2
+  hsep [ "case", prettyTerm 2 e0, "of"
+       , "{", "[]", "->", prettyTerm 1 e1
+       , ";", prettyId x, "::", prettyId xs, "->", prettyTerm 1 e2
+       , "}"
        ]
 prettyTerm p (TLam x t e) =
   wrap p 1 $ hsep [ "fn"

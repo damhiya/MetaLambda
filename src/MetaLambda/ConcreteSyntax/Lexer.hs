@@ -21,6 +21,7 @@ token = do
     , P.string ","  $> T.Comma
     , P.string "::" $> T.Cons
     , P.string ":"  $> T.Colon
+    , P.string ";"  $> T.Semicolon
     , P.string "==" $> T.Eq
     , P.string "<=" $> T.Le
     , P.string "<"  $> T.Lt
@@ -32,6 +33,8 @@ token = do
     , P.string "]"  $> T.BrkR
     , P.string "("  $> T.ParL
     , P.string ")"  $> T.ParR
+    , P.string "{"  $> T.BrcL
+    , P.string "}"  $> T.BrcR
     , P.string "+"  $> T.Plus
     , P.string "-"  $> T.Minus
     , P.string "*"  $> T.Prod
@@ -47,9 +50,9 @@ token = do
           "box"    -> T.Box
           "let"    -> T.Let
           "in"     -> T.In
-          "match"  -> T.Match
+          "case"   -> T.Case
+          "of"     -> T.Of
           "with"   -> T.With
-          "end"    -> T.End
           "if"     -> T.If
           "then"   -> T.Then
           "else"   -> T.Else
@@ -59,7 +62,6 @@ token = do
           "list"   -> T.List
           "true"   -> T.True
           "false"  -> T.False
-          "of"     -> T.Of
           "inject" -> T.Inject
           ident    -> T.Ident ident
     , do

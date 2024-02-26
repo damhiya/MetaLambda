@@ -7,6 +7,7 @@ data Tok
   | Comma
   | Bar
   | Colon
+  | Semicolon
   | Equal
   | Eq
   | Le
@@ -24,14 +25,16 @@ data Tok
   | BrkR
   | ParL
   | ParR
+  | BrcL
+  | BrcR
   | Fn
   | Fix
   | Box
   | Let
   | In
-  | Match
+  | Case
+  | Of
   | With
-  | End
   | If
   | Then
   | Else
@@ -41,7 +44,6 @@ data Tok
   | List
   | True
   | False
-  | Of
   | Inject
   | Ident String
   | Num Integer

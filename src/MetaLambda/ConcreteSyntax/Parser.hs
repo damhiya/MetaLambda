@@ -84,18 +84,18 @@ grammar = mdo
     pure TFalse
 
   boolMatch <- E.rule $ do
-    tok T.Match
+    tok T.Case
     e <- term2
-    tok T.With
-    tok T.Bar
+    tok T.Of
+    tok T.BrcL
     tok T.True
     tok T.Arrow
     e1 <- term1
-    tok T.Bar
+    tok T.Semicolon
     tok T.False
     tok T.Arrow
     e2 <- term1
-    tok T.End
+    tok T.BrcR
     pure (TBoolMatch e e1 e2)
 
   ifThenElse <- E.rule $ do
@@ -120,10 +120,9 @@ grammar = mdo
     pure (TPair e1 e2)
 
   prodMatch <- E.rule $ do
-    tok T.Match
+    tok T.Case
     e <- term2
-    tok T.With
-    tok T.Bar
+    tok T.Of
     tok T.ParL
     x <- ident
     tok T.Comma
@@ -131,7 +130,6 @@ grammar = mdo
     tok T.ParR
     tok T.Arrow
     e1 <- term1
-    tok T.End
     pure (TProdMatch e x y e1)
 
   -- list
@@ -148,20 +146,20 @@ grammar = mdo
     pure (TCons e1 e2)
 
   listMatch <- E.rule $ do
-    tok T.Match
+    tok T.Case
     e <- term2
-    tok T.With
-    tok T.Bar
+    tok T.Of
+    tok T.BrcL
     brackets $ pure ()
     tok T.Arrow
     e1 <- term1
-    tok T.Bar
+    tok T.Semicolon
     x <- ident
     tok T.Cons
     xs <- ident
     tok T.Arrow
     e2 <- term1
-    tok T.End
+    tok T.BrcR
     pure (TListMatch e e1 x xs e2)
 
   -- function
@@ -292,8 +290,7 @@ grammar = mdo
     t <- term10
     pure (TPrimOp (Inject t))
 
-  term11 <- E.rule $ var <|> true <|> false <|> boolMatch <|> intLit
-                 <|> pair <|> prodMatch <|> listMatch <|> box <|> parens term1
+  term11 <- E.rule $ var <|> true <|> false <|> intLit <|> pair <|> box <|> parens term1
   term10 <- E.rule $ term11 <|> clo <|> nil
   term9  <- E.rule $ term10 <|> app <|> inject
   term8  <- E.rule $ term9 <|> intPow
@@ -303,6 +300,7 @@ grammar = mdo
   term4  <- E.rule $ term5 <|> intEq <|> intLe <|> intLt
   let term2 = term4
   term1  <- E.rule $ term2 <|> lam <|> fix <|> letbox <|> letin <|> ifThenElse
+                 <|> boolMatch <|> prodMatch <|> listMatch
 
   pure term1
   where
