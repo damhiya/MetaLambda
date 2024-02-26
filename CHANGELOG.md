@@ -1,6 +1,8 @@
 # Revision history for MetaLambda
 
 ## Dev
+
+## 0.4
 Change
 * match syntax `match xs with | [] -> true | y :: ys -> false end` -> `case xs of { [] -> true ; y :: ys -> false }`
 
