@@ -84,28 +84,19 @@ grammar = mdo
     pure TFalse
 
   boolMatch <- E.rule $ do
-    tok T.Case
-    e <- term2
-    tok T.Of
-    tok T.BrcL
-    tok T.True
-    tok T.Arrow
-    e1 <- term1
-    tok T.Semicolon
-    tok T.False
-    tok T.Arrow
-    e2 <- term1
-    tok T.BrcR
-    pure (TBoolMatch e e1 e2)
+    { tok T.Case; e <- term2; tok T.Of
+    ; tok T.BrcL     ; tok T.True ; tok T.Arrow; e1 <- term1
+    ; tok T.Semicolon; tok T.False; tok T.Arrow; e2 <- term1
+    ; tok T.BrcR
+    ; pure (TBoolMatch e e1 e2)
+    }
 
   ifThenElse <- E.rule $ do
-    tok T.If
-    e <- term2
-    tok T.Then
-    e1 <- term1
-    tok T.Else
-    e2 <- term1
-    pure (TBoolMatch e e1 e2)
+    { tok T.If; e <- term2
+    ; tok T.Then; e1 <- term1
+    ; tok T.Else; e2 <- term1
+    ; pure (TBoolMatch e e1 e2)
+    }
 
   -- integer
   intLit <- E.rule $ do
@@ -120,17 +111,10 @@ grammar = mdo
     pure (TPair e1 e2)
 
   prodMatch <- E.rule $ do
-    tok T.Case
-    e <- term2
-    tok T.Of
-    tok T.ParL
-    x <- ident
-    tok T.Comma
-    y <- ident
-    tok T.ParR
-    tok T.Arrow
-    e1 <- term1
-    pure (TProdMatch e x y e1)
+    { tok T.Case; e <- term2; tok T.Of
+    ; tok T.ParL; x <- ident; tok T.Comma; y <- ident; tok T.ParR; tok T.Arrow; e1 <- term1
+    ; pure (TProdMatch e x y e1)
+    }
 
   -- list
   nil <- E.rule $ do
@@ -146,47 +130,30 @@ grammar = mdo
     pure (TCons e1 e2)
 
   listMatch <- E.rule $ do
-    tok T.Case
-    e <- term2
-    tok T.Of
-    tok T.BrcL
-    brackets $ pure ()
-    tok T.Arrow
-    e1 <- term1
-    tok T.Semicolon
-    x <- ident
-    tok T.Cons
-    xs <- ident
-    tok T.Arrow
-    e2 <- term1
-    tok T.BrcR
-    pure (TListMatch e e1 x xs e2)
+    { tok T.Case; e <- term2; tok T.Of
+    ; tok T.BrcL     ; brackets $ pure ()                 ; tok T.Arrow; e1 <- term1
+    ; tok T.Semicolon; x <- ident; tok T.Cons; xs <- ident; tok T.Arrow; e2 <- term1
+    ; tok T.BrcR
+    ; pure (TListMatch e e1 x xs e2)
+    }
 
   -- function
   lam <- E.rule $ do
-    tok T.Fn
-    tok T.ParL
-    x <- ident
-    tok T.Colon
-    t <- typ1
-    tok T.ParR
-    tok T.Arrow
-    e <- term1
-    pure (TLam x t e)
+    { tok T.Fn
+    ; tok T.ParL; x <- ident; tok T.Colon; t <- typ1; tok T.ParR
+    ; tok T.Arrow
+    ; e <- term1
+    ; pure (TLam x t e)
+    }
 
   fix <- E.rule $ do
-    tok T.Fix
-    tok T.ParL
-    f <- ident
-    tok T.Colon
-    t1 <- typ2
-    tok T.Arrow
-    t2 <- typ1
-    tok T.ParR
-    x <- ident
-    tok T.Arrow
-    e <- term1
-    pure (TFix t1 t2 f x e)
+    { tok T.Fix
+    ; tok T.ParL; f <- ident; tok T.Colon; t1 <- typ2; tok T.Arrow; t2 <- typ1; tok T.ParR
+    ; x <- ident
+    ; tok T.Arrow
+    ; e <- term1
+    ; pure (TFix t1 t2 f x e)
+    }
 
   app <- E.rule $ do
     e1 <- term9
